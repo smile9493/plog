@@ -1,0 +1,138 @@
+<?php
+
+/**
+ * article sort model
+ * @package PLOG
+ * 
+ */
+
+class Sort_Model
+{
+
+    private $db;
+    private $table;
+    private $table_blog;
+
+    function __construct()
+    {
+        $this->table = DB_PREFIX . 'sort';
+        $this->table_blog = DB_PREFIX . 'blog';
+        $this->db = Database::getInstance();
+    }
+
+    function getSorts($filterAllowUserPost = false)
+    {
+        $sorts = [];
+        $query = $this->db->query("SELECT * FROM $this->table ORDER BY pid ASC,taxis ASC");
+        while ($row = $this->db->fetch_array($query)) {
+            $data = $this->db->once_fetch_array("SELECT COUNT(*) AS total FROM $this->table_blog WHERE sortid=" . $row['sid'] . " AND hide='n' AND checked='y' AND type='blog'");
+            $logNum = $data['total'];
+
+            // 为注册用户过滤不可投稿的分类
+            if ($filterAllowUserPost && (isset($row['allow_user_post']) && $row['allow_user_post'] === 'n')) {
+                continue;
+            }
+
+            $sortData = array(
+                'sid'          => (int)$row['sid'],
+                'lognum'       => $logNum,
+                'sortname'     => htmlspecialchars($row['sortname']),
+                'alias'        => $row['alias'],
+                'description'  => htmlspecialchars($row['description']),
+                'kw'           => htmlspecialchars($row['kw']),
+                'title_origin' => $row['title'],
+                'title'        => htmlspecialchars(Sort::formatSortTitle($row['title'], $row['sortname'])),
+                'taxis'        => (int)$row['taxis'],
+                'pid'          => (int)$row['pid'],
+                'template'     => htmlspecialchars($row['template']),
+                'sortimg'      => htmlspecialchars($row['sortimg']),
+                'page_count'   => (int)$row['page_count'],
+                'allow_user_post'  => $row['allow_user_post']
+            );
+            if ($sortData['pid'] == 0) {
+                $sortData['children'] = [];
+            } elseif (isset($sorts[$row['pid']])) {
+                $sorts[$row['pid']]['children'][] = $row['sid'];
+            }
+            $sorts[$row['sid']] = $sortData;
+        }
+        return $sorts;
+    }
+
+    function updateSort($sortData, $sid)
+    {
+        $Item = [];
+        foreach ($sortData as $key => $data) {
+            $Item[] = "$key='$data'";
+        }
+        $upStr = implode(',', $Item);
+        $this->db->query("update $this->table set $upStr where sid=$sid");
+    }
+
+    public function addSort($data)
+    {
+        $kItem = $dItem = [];
+        foreach ($data as $key => $val) {
+            $kItem[] = $key;
+            $dItem[] = $val;
+        }
+        $field = implode(',', $kItem);
+        $values = "'" . implode("','", $dItem) . "'";
+        $this->db->query("INSERT INTO $this->table ($field) VALUES ($values)");
+        return $this->db->insert_id();
+    }
+
+    function deleteSort($sid)
+    {
+        $this->db->query("update $this->table_blog set sortid=-1 where sortid=$sid");
+        $this->db->query("update $this->table set pid=0 where pid=$sid");
+        $this->db->query("DELETE FROM $this->table where sid=$sid");
+    }
+
+    function getOneSortById($sid)
+    {
+        $sql = "select * from $this->table where sid=$sid";
+        $res = $this->db->query($sql);
+        $row = $this->db->fetch_array($res);
+        $sortData = [];
+        if ($row) {
+            $sortData = array(
+                'sortname'     => htmlspecialchars(trim($row['sortname'])),
+                'alias'        => $row['alias'],
+                'pid'          => $row['pid'],
+                'title_origin' => $row['title'],
+                'title'        => htmlspecialchars(Sort::formatSortTitle($row['title'], $row['sortname'])),
+                'kw'           => htmlspecialchars($row['kw']),
+                'description'  => htmlspecialchars(trim($row['description'])),
+                'template'     => !empty($row['template']) ? htmlspecialchars(trim($row['template'])) : 'log_list',
+                'sortimg'      => htmlspecialchars(trim($row['sortimg'])),
+                'page_count'   => (int)$row['page_count'],
+                'allow_user_post'  => $row['allow_user_post']
+            );
+        }
+        return $sortData;
+    }
+
+    function getSortByAlias($alias)
+    {
+        if (empty($alias)) {
+            return [];
+        }
+        $alias = addslashes($alias);
+        $res = $this->db->query("SELECT * FROM $this->table WHERE alias = '$alias'");
+        $row = $this->db->fetch_array($res);
+        return $row;
+    }
+
+    function getSortName($sid)
+    {
+        if ($sid > 0) {
+            $res = $this->db->query("SELECT sortname FROM $this->table WHERE sid = $sid");
+            $row = $this->db->fetch_array($res);
+            $sortName = htmlspecialchars($row['sortname']);
+        } else {
+            $sortName = '未分类';
+        }
+        return $sortName;
+    }
+}

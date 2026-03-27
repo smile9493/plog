@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql/mysql-server:5.6
+    container_name: plog-dev-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: plog_dev
+      MYSQL_USER: plog
+      MYSQL_PASSWORD: plog123456
+      MYSQL_ROOT_PASSWORD: root123456
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+
+  plog:
+    image: plog/plog:pro-latest-php7.4-apache
+    container_name: plog-dev
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      PLOG_DB_HOST: mysql
+      PLOG_DB_NAME: plog_dev
+      PLOG_DB_USER: plog
+      PLOG_DB_PASSWORD: plog123456
+      PLOG_DOMAIN_NAME: localhost
+      MAX_POST_BODY: 50m
+      MAX_EXECUTION_TIME: 300
+    ports:
+      - "18080:80"
+    volumes:
+      - ./plog_data:/app
+      - ./content/templates/mytheme:/app/content/templates/mytheme
+
+volumes:
+  mysql_dev_data:

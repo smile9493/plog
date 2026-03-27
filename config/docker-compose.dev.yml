@@ -1,0 +1,98 @@
+# Windows开发环境 - 完整Plog开发配置
+# 包含: MySQL + Plog + phpMyAdmin + MailHog(邮件测试)
+
+services:
+  # MySQL数据库
+  mysql-dev:
+    image: mysql/mysql-server:5.7
+    container_name: plog-dev-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: plog_dev
+      MYSQL_USER: plog
+      MYSQL_PASSWORD: plog123456
+      TZ: Asia/Shanghai
+    ports:
+      - "13306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./dev/mysql/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - plog-dev-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Plog应用
+  plog-dev:
+    image: plog/plog:pro-latest-php7.4-apache
+    container_name: plog-dev-app
+    restart: unless-stopped
+    depends_on:
+      mysql-dev:
+        condition: service_healthy
+    environment:
+      PLOG_DB_HOST: mysql-dev
+      PLOG_DB_NAME: plog_dev
+      PLOG_DB_USER: plog
+      PLOG_DB_PASSWORD: plog123456
+      PLOG_DOMAIN_NAME: localhost
+      MAX_POST_BODY: 50m
+      MAX_EXECUTION_TIME: 300
+      TZ: Asia/Shanghai
+    ports:
+      - "18080:80"
+    volumes:
+      # 挂载整个项目目录(完整开发环境)
+      - ./:/app
+      # 排除数据目录,使用容器内的
+      - /app/content/uploadfile
+      - /app/admin/views/css/hide-promo.css
+    networks:
+      - plog-dev-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # phpMyAdmin - 数据库管理
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: plog-dev-pma
+    restart: unless-stopped
+    depends_on:
+      - mysql-dev
+    environment:
+      PMA_HOST: mysql-dev
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root123456
+      UPLOAD_LIMIT: 50M
+    ports:
+      - "18081:80"
+    networks:
+      - plog-dev-network
+
+  # MailHog - 邮件测试工具
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: plog-dev-mailhog
+    restart: unless-stopped
+    ports:
+      - "18025:1025"  # SMTP端口
+      - "18026:8025"  # Web界面端口
+    networks:
+      - plog-dev-network
+
+networks:
+  plog-dev-network:
+    driver: bridge
+
+volumes:
+  mysql_dev_data:
+    driver: local

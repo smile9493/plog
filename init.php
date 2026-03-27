@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * init.
+ * @package PLOG
+ * 
+ */
+
+ob_start();
+header('Content-Type: text/html; charset=UTF-8');
+
+const PLOG_ROOT = __DIR__;
+
+require_once PLOG_ROOT . '/config.php';
+require_once PLOG_ROOT . '/include/lib/common.php';
+require_once PLOG_ROOT . '/include/lib/emlang.php';
+
+spl_autoload_register("emAutoload");
+
+if (Util::isDevEnv()) {
+    error_reporting(E_ALL);
+} else {
+    error_reporting(1);
+}
+
+if (extension_loaded('mbstring')) {
+    mb_internal_encoding('UTF-8');
+}
+
+$CACHE = Cache::getInstance();
+
+$userData = [];
+
+define('ISLOGIN', LoginAuth::isLogin());
+date_default_timezone_set(Option::get('timezone'));
+
+const ROLE_ADMIN = 'admin';
+const ROLE_EDITOR = 'editor';
+const ROLE_WRITER = 'writer';
+const ROLE_VISITOR = 'visitor';
+
+define('ROLE', ISLOGIN === true ? $userData['role'] : User::ROLE_VISITOR);
+define('UID', ISLOGIN === true ? (int)$userData['uid'] : 0);
+
+define('BLOG_URL', Option::get('blogurl'));
+
+const TPLS_URL = BLOG_URL . 'content/templates/';
+const TPLS_PATH = PLOG_ROOT . '/content/templates/';
+const PLUGIN_URL = BLOG_URL . 'content/plugins/';
+const PLUGIN_PATH = PLOG_ROOT . '/content/plugins/';
+
+//站点URL
+define('DYNAMIC_BLOGURL', Option::get('blogurl'));
+//当前模板的URL
+define('TEMPLATE_URL', TPLS_URL . Template::getCurrentTemplate() . '/');
+//后台模板的绝对路径
+define('ADMIN_TEMPLATE_PATH', PLOG_ROOT . '/admin/views/');
+//前台模板的绝对路径
+define('TEMPLATE_PATH', TPLS_PATH . Template::getCurrentTemplate() . '/');
+
+const MSGCODE_EMKEY_INVALID = 1001;
+const MSGCODE_NO_UPUPDATE = 1002;
+const MSGCODE_SUCCESS = 200;
+
+$active_plugins = Option::get('active_plugins');
+$emHooks = [];
+if ($active_plugins && is_array($active_plugins)) {
+    foreach ($active_plugins as $plugin) {
+        if (true === checkPlugin($plugin)) {
+            include_once(PLOG_ROOT . '/content/plugins/' . $plugin);
+        }
+    }
+}
+
+// 加载模板的系统调用文件
+define('TEMPLATE_HOOK_PATH', TEMPLATE_PATH . 'plugins.php');
+if (file_exists(TEMPLATE_HOOK_PATH)) {
+    include_once(TEMPLATE_HOOK_PATH);
+}
+
+User::updateUserActivity();

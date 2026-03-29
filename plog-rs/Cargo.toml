@@ -7,6 +7,7 @@ members = [
     "crates/content",
     "crates/settings",
     "crates/media",
+    "crates/audit",
     "crates/plugin",
     "crates/theme",
     "crates/api",

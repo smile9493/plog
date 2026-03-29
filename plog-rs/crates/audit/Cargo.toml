@@ -1,0 +1,16 @@
+[package]
+name = "plog-audit"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Audit Module"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../core" }
+plog-contracts = { path = "../contracts" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sea-orm = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }

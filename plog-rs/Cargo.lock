@@ -2000,6 +2000,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "plog-audit"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "plog-contracts",
+ "plog-core",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "plog-auth"
 version = "0.1.0"
 dependencies = [

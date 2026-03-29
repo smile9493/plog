@@ -1,13 +1,31 @@
-// 用户相关类型
+// 用户相关类型 - 匹配 Rust API
 export interface User {
-  id: number
+  uid: number
   username: string
+  nickname: string
   email: string
-  nickname?: string
-  avatar?: string
-  role: string
-  created_at: string
-  updated_at: string
+  photo?: string
+  description?: string
+  role: 'admin' | 'editor' | 'user'
+  create_time: number
+}
+
+export interface UserListParams {
+  page?: number
+  per_page?: number
+  username?: string
+  role?: string
+}
+
+export interface UserListResponse {
+  items: User[]
+  pagination: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+    has_more: boolean
+  }
 }
 
 export interface LoginForm {
@@ -18,67 +36,75 @@ export interface LoginForm {
 
 // 文章相关类型
 export interface Post {
-  id: number
+  gid: number
   title: string
   content: string
   excerpt?: string
   cover?: string
-  author_id: number
-  category_id?: number
-  status: 'draft' | 'published' | 'archived'
+  author: number
+  sortid: number
+  date: number
+  hide: string
+  type: string
   views: number
-  created_at: string
-  updated_at: string
-  author?: User
-  category?: Category
-  tags?: Tag[]
+  comnum: number
+  like_count: number
+  top: string
+  sortop: string
+  allow_remark: string
+  password?: string
+  alias?: string
 }
 
-export interface PostForm {
-  title: string
-  content: string
-  excerpt?: string
-  cover?: string
+export interface PostListParams {
+  page?: number
+  per_page?: number
+  keyword?: string
   category_id?: number
-  tag_ids?: number[]
-  status: 'draft' | 'published'
+  status?: string
+  order?: string
+}
+
+export interface PostListResponse {
+  items: Post[]
+  pagination: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+    has_more: boolean
+  }
 }
 
 // 分类相关类型
 export interface Category {
-  id: number
-  name: string
-  slug: string
+  sid: number
+  sortname: string
+  pid: number
+  sortorder: number
   description?: string
-  parent_id?: number
-  post_count: number
-  created_at: string
-  updated_at: string
+  alias?: string
 }
 
 // 标签相关类型
 export interface Tag {
-  id: number
-  name: string
-  slug: string
-  post_count: number
-  created_at: string
-  updated_at: string
+  tid: number
+  tagname: string
+  usenum: number
 }
 
 // 评论相关类型
 export interface Comment {
-  id: number
-  post_id: number
-  user_id?: number
-  author: string
-  email: string
+  cid: number
+  gid: number
+  pid: number
   content: string
-  status: 'pending' | 'approved' | 'spam'
-  created_at: string
-  updated_at: string
-  post?: Post
-  user?: User
+  poster: string
+  email: string
+  url: string
+  ip: string
+  date: number
+  hide: string
 }
 
 // 媒体文件相关类型
@@ -91,37 +117,24 @@ export interface Media {
   width?: number
   height?: number
   created_at: string
-  updated_at: string
 }
 
 // API 响应类型
 export interface ApiResponse<T = any> {
-  code: number
-  message: string
+  success: boolean
   data: T
-}
-
-export interface PaginatedResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  per_page: number
-  total_pages: number
+  error?: {
+    code: string
+    message: string
+  }
+  meta?: {
+    request_id: string
+    timestamp: string
+  }
 }
 
 // 分页参数
 export interface PaginationParams {
   page?: number
   per_page?: number
-}
-
-// 文章查询参数
-export interface PostQueryParams extends PaginationParams {
-  keyword?: string
-  status?: string
-  category_id?: number
-  tag_id?: number
-  author_id?: number
-  sort_by?: string
-  sort_order?: 'asc' | 'desc'
 }

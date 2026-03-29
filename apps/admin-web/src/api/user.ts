@@ -1,0 +1,34 @@
+import request from '@/utils/request'
+import type { User, UserListParams, UserListResponse } from '@/types/user'
+
+export const userApi = {
+  // 获取用户列表
+  getList(params: UserListParams) {
+    return request.get<UserListResponse>('/api/v2/users', { params })
+  },
+
+  // 获取用户详情
+  getById(id: number) {
+    return request.get<User>(`/api/v2/users/${id}`)
+  },
+
+  // 创建用户
+  create(data: Partial<User> & { password?: string }) {
+    return request.post<User>('/api/v2/users', data)
+  },
+
+  // 更新用户
+  update(id: number, data: Partial<User>) {
+    return request.put<User>(`/api/v2/users/${id}`, data)
+  },
+
+  // 删除用户
+  delete(id: number) {
+    return request.delete(`/api/v2/users/${id}`)
+  },
+
+  // 重置密码
+  resetPassword(id: number, password: string) {
+    return request.post(`/api/v2/users/${id}/reset-password`, { password })
+  }
+}

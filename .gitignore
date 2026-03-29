@@ -126,13 +126,15 @@ emlog_data/
 # ==================== 测试和覆盖率 ====================
 # PHPUnit
 .phpunit.result.cache
-phpunit.xml
 coverage/
 .clover/
 
 # 测试输出
 tests/output/
 tests/temp/
+
+# 代码检查报告
+phpcs-report.xml
 
 # ==================== 构建输出 ====================
 dist/

@@ -1,0 +1,30 @@
+{
+  "name": "plog/theme-kit",
+  "description": "Plog Theme Development Kit",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Plog Team",
+      "email": "team@plog.dev"
+    }
+  ],
+  "require": {
+    "php": "^7.4|^8.0",
+    "plog/core": "^1.0.0",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Plog\\Theme\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Plog\\Theme\\Tests\\": "tests/"
+    }
+  }
+}

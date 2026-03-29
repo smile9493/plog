@@ -1,0 +1,60 @@
+{
+  "name": "seo-plugin",
+  "version": "1.0.0",
+  "type": "plugin",
+  "entry": "src/Plugin.php",
+  "description": "SEO优化插件 - 提供SEO元数据管理、sitemap生成等功能",
+  "author": "Plog Team",
+  "homepage": "https://plog.dev/plugins/seo",
+  "license": "MIT",
+  "dependencies": {
+    "core": "^1.0.0"
+  },
+  "permissions": [
+    "content.read",
+    "content.write",
+    "settings.read",
+    "settings.write"
+  ],
+  "hooks": {
+    "actions": [
+      "post.created",
+      "post.updated",
+      "post.deleted"
+    ],
+    "filters": [
+      "post.content",
+      "page.title",
+      "page.meta"
+    ]
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/seo/sitemap.xml",
+      "handler": "SitemapController@index"
+    },
+    {
+      "method": "GET",
+      "path": "/seo/robots.txt",
+      "handler": "RobotsController@index"
+    }
+  ],
+  "menus": [
+    {
+      "parent": "settings",
+      "label": "SEO设置",
+      "path": "/settings/seo",
+      "icon": "Search"
+    }
+  ],
+  "config": {
+    "enable_sitemap": true,
+    "enable_meta_tags": true,
+    "enable_og_tags": true,
+    "enable_twitter_cards": true,
+    "default_title": "",
+    "default_description": "",
+    "default_keywords": ""
+  }
+}

@@ -80,19 +80,7 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <?php if (!Register::isRegLocal()) : ?>
-                                    <a href="https://www.plog.net/register" target="_blank"><span class="badge badge-secondary">Plog <?= Option::PLOG_VERSION ?></span></a>
-                                    <a href="https://www.plog.net/register" target="_blank" class="badge badge-secondary"><?= _lang('unregistered') ?></a>
-                                <?php else: ?>
-                                    <a href="https://www.plog.net" target="_blank"><span class="badge badge-success">Plog <?= ucfirst(Option::PLOG_VERSION) ?></span></a>
-                                    <?php if (Register::getRegType() === 2): ?>
-                                        <a href="https://www.plog.net/register" target="_blank" class="badge badge-warning"><?= _lang('hardcore_svip') ?></a>
-                                    <?php elseif (Register::getRegType() === 1): ?>
-                                        <a href="https://www.plog.net/register" target="_blank" class="badge badge-success"><?= _lang('friend_vip') ?></a>
-                                    <?php else: ?>
-                                        <a href="https://www.plog.net/register" target="_blank" class="badge badge-success"><?= _lang('registered') ?></a>
-                                    <?php endif ?>
-                                <?php endif; ?>
+                                <a href="https://www.plog.net" target="_blank"><span class="badge badge-success">Plog <?= ucfirst(Option::PLOG_VERSION) ?></span></a>
                             </div>
                             <div>
                                 <a id="ckup" href="javascript:checkUpdate();" class="badge badge-success d-flex align-items-center"><span><?= _lang('update') ?></span></a>
@@ -105,57 +93,6 @@
     <?php endif; ?>
 </div>
 <?php if (User::isAdmin()): ?>
-    <?php if (!Register::isRegLocal()) : ?>
-        <div class="row">
-            <div class="col-lg-6 mb-3">
-                <div class="card shadow">
-                    <div class="card-header text-danger">
-                        <h6 class="my-0 font-weight-bold"><?= _lang('register_full_feature') ?></h6>
-                    </div>
-                    <div class="card-body">
-                        <p><span class="badge badge-warning badge-pill">1</span> <?= _lang('register_feature_1') ?></p>
-                        <p><span class="badge badge-warning badge-pill">2</span> <?= _lang('register_feature_2') ?></p>
-                        <p><span class="badge badge-warning badge-pill">3</span> <?= _lang('register_feature_3') ?></p>
-                        <p><span class="badge badge-warning badge-pill">4</span> <?= _lang('register_feature_4') ?></p>
-                        <p>
-                            <a href="https://www.plog.net/register" target="_blank" class="btn btn-danger px-4">
-                                <?= _lang('register_now') ?>
-                                <i class="icofont-external-link me-2"></i>
-                            </a>
-                            <a href="auth.php" class="btn btn-outline-success px-4">
-                                <?= _lang('input_license') ?>
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <style>
-            .bg-gradient-warning {
-                background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-            }
-
-            .registration-prompt {
-                animation: slideInUp 0.6s ease-out;
-            }
-
-            @keyframes slideInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .registration-prompt .card-body {
-                background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            }
-        </style>
-    <?php endif ?>
     <div class="modal fade" id="update-modal" tabindex="-1" role="dialog" aria-labelledby="update-modal-label" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content border-0 shadow">

@@ -34,6 +34,14 @@ $userData = [];
 define('ISLOGIN', LoginAuth::isLogin());
 date_default_timezone_set(Option::get('timezone'));
 
+// 强制设置输出编码为 UTF-8
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+if (function_exists('mb_http_output')) {
+    mb_http_output('UTF-8');
+}
+
 const ROLE_ADMIN = 'admin';
 const ROLE_EDITOR = 'editor';
 const ROLE_WRITER = 'writer';

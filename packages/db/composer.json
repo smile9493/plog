@@ -1,0 +1,33 @@
+{
+  "name": "plog/db",
+  "type": "library",
+  "description": "Plog Database Package - Connection, Query Builder, and Models",
+  "keywords": ["database", "db", "query-builder", "model"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Plog Team",
+      "email": "team@plog.dev"
+    }
+  ],
+  "require": {
+    "php": "^7.4|^8.0",
+    "ext-pdo": "*",
+    "plog/core": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Plog\\Db\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Plog\\Db\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

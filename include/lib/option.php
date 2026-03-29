@@ -155,9 +155,6 @@ class Option
         $options_cache = $CACHE->readCache('options');
         $options_cache['site_title'] = $options_cache['site_title'] ?: $options_cache['blogname'];
         $options_cache['site_description'] = $options_cache['site_description'] ?: $options_cache['bloginfo'];
-        if (empty($options_cache['emkey'])) {
-            $options_cache['site_title'] = _lang('un_licensed') . $options_cache['site_title'];
-        }
         return $options_cache;
     }
 

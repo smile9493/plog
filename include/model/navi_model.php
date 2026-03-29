@@ -33,8 +33,8 @@ class Navi_Model
             $url = Url::navi($row['type'], $row['type_id'], $row['url']);
             $naviData = array(
                 'id'        => (int)$row['id'],
-                'naviname'  => htmlspecialchars(trim($row['naviname'])),
-                'url'       => htmlspecialchars(trim($url)),
+                'naviname'  => trim($row['naviname']),
+                'url'       => trim($url),
                 'newtab'    => $row['newtab'],
                 'isdefault' => $row['isdefault'],
                 'type'      => (int)$row['type'],
@@ -82,8 +82,8 @@ class Navi_Model
         $naviData = [];
         if ($row) {
             $naviData = array(
-                'naviname'  => htmlspecialchars(trim($row['naviname'])),
-                'url'       => htmlspecialchars(trim($row['url'])),
+                'naviname'  => trim($row['naviname']),
+                'url'       => trim($row['url']),
                 'newtab'    => $row['newtab'],
                 'isdefault' => $row['isdefault'],
                 'type'      => (int)$row['type'],

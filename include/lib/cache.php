@@ -150,11 +150,11 @@ class Cache
                 'photo'     => $photo,
                 'avatar'    => $photoSrc,
                 'name_orig' => $row['nickname'],
-                'name'      => htmlspecialchars($row['nickname']),
-                'mail'      => htmlspecialchars($row['email']),
+                'name'      => $row['nickname'],
+                'mail'      => $row['email'],
                 'des'       => htmlClean($row['description']),
                 'des_orig'  => $row['description'],
-                'ischeck'   => htmlspecialchars($row['ischeck']),
+                'ischeck'   => $row['ischeck'],
                 'role'      => $row['role'],
             ];
         }
@@ -176,7 +176,7 @@ class Cache
         $data = $this->db->once_fetch_array("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "twitter");
         $note_num = $data['total'];
 
-        $data = $this->db->once_fetch_array("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "like");
+        $data = $this->db->once_fetch_array("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "`like`");
         $like_num = $data['total'];
 
         $sql = "SELECT 
@@ -334,8 +334,8 @@ class Cache
             }
             $naviData = array(
                 'id'        => (int)$row['id'],
-                'naviname'  => htmlspecialchars(trim($row['naviname'])),
-                'url'       => htmlspecialchars(trim($url)),
+                'naviname'  => trim($row['naviname']),
+                'url'       => trim($url),
                 'newtab'    => $row['newtab'],
                 'isdefault' => $row['isdefault'],
                 'type'      => (int)$row['type'],
@@ -371,7 +371,7 @@ class Cache
         $logs = [];
         while ($row = $this->db->fetch_array($res)) {
             $row['gid'] = (int)$row['gid'];
-            $row['title'] = htmlspecialchars($row['title']);
+            $row['title'] = $row['title'];
             $row['cover'] = $row['cover'] ? getFileUrl($row['cover']) : '';
             $logs[] = $row;
         }

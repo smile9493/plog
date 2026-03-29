@@ -49,8 +49,11 @@ class DatabasePDO
         try {
             if ($this->dbType === 'mysql') {
                 $dsn = 'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4';
-                $options = [];
+                $options = [
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                ];
                 $dbh = new PDO($dsn, DB_USER, DB_PASSWD, $options);
+                $dbh->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
             } else {
                 throw new PDOException("不支持的数据库类型: $this->dbType");
             }

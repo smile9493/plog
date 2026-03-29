@@ -1,0 +1,33 @@
+{
+  "name": "plog/content",
+  "type": "library",
+  "description": "Plog Content Package - Posts, Categories, Tags, Comments, and Media",
+  "keywords": ["content", "post", "category", "tag", "comment"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Plog Team",
+      "email": "team@plog.dev"
+    }
+  ],
+  "require": {
+    "php": "^7.4|^8.0",
+    "plog/core": "^1.0",
+    "plog/db": "^1.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Plog\\Content\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Plog\\Content\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

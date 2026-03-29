@@ -1,0 +1,54 @@
+{
+  "name": "default",
+  "version": "1.0.0",
+  "type": "theme",
+  "entry": "src/Theme.php",
+  "description": "Plog默认主题 - 简洁优雅的博客主题",
+  "author": "Plog Team",
+  "homepage": "https://plog.dev/themes/default",
+  "license": "MIT",
+  "templates": [
+    "index",
+    "post",
+    "page",
+    "category",
+    "tag",
+    "archive",
+    "search",
+    "404"
+  ],
+  "assets": {
+    "css": [
+      "assets/css/style.css"
+    ],
+    "js": [
+      "assets/js/main.js"
+    ]
+  },
+  "config": {
+    "layout": {
+      "sidebar": true,
+      "footer": true,
+      "header": true
+    },
+    "colors": {
+      "primary": "#409eff",
+      "secondary": "#67c23a",
+      "text": "#333333",
+      "background": "#ffffff"
+    },
+    "typography": {
+      "font_family": "'Helvetica Neue', Arial, sans-serif",
+      "font_size": "16px",
+      "line_height": "1.6"
+    },
+    "posts": {
+      "per_page": 10,
+      "show_excerpt": true,
+      "show_author": true,
+      "show_date": true,
+      "show_category": true,
+      "show_tags": true
+    }
+  }
+}

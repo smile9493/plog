@@ -119,11 +119,11 @@ class Log_Model
         }
         $row = $this->db->fetch_array($res);
         if ($row) {
-            $row['title'] = htmlspecialchars($row['title']);
-            $row['content'] = htmlspecialchars($row['content']);
-            $row['excerpt'] = htmlspecialchars($row['excerpt']);
-            $row['password'] = htmlspecialchars($row['password']);
-            $row['template'] = !empty($row['template']) ? htmlspecialchars(trim($row['template'])) : 'page';
+            $row['log_title'] = $row['title'];
+            $row['log_content'] = $row['content'];
+            $row['log_description'] = $row['excerpt'];
+            $row['password'] = $row['password'];
+            $row['template'] = !empty($row['template']) ? trim($row['template']) : 'page';
             return $row;
         }
         return false;
@@ -261,7 +261,7 @@ class Log_Model
         }
 
         return [
-            'log_title'    => htmlspecialchars($row['title']),
+            'log_title'    => $row['title'],
             'timestamp'    => $row['date'],
             'date'         => $row['date'],
             'logid'        => (int)$row['gid'],
@@ -318,7 +318,7 @@ class Log_Model
         $res = $this->db->query($sql);
         $logs = [];
         while ($row = $this->db->fetch_array($res)) {
-            $row['log_title'] = htmlspecialchars(trim($row['title']));
+            $row['log_title'] = trim($row['title']);
             $row['log_cover'] = $row['cover'] ? getFileUrl($row['cover']) : '';
             $row['log_url'] = Url::log($row['gid']);
             $row['logid'] = $row['gid'];
@@ -364,7 +364,7 @@ class Log_Model
         $pages = [];
         while ($row = $this->db->fetch_array($res)) {
             $row['date'] = date("Y-m-d H:i", $row['date']);
-            $row['title'] = !empty($row['title']) ? htmlspecialchars($row['title']) : '无标题';
+            $row['title'] = !empty($row['title']) ? $row['title'] : '无标题';
             $pages[] = $row;
         }
         return $pages;

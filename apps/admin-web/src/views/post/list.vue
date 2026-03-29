@@ -17,7 +17,6 @@
             <el-option label="全部" value="" />
             <el-option label="已发布" value="published" />
             <el-option label="草稿" value="draft" />
-            <el-option label="已归档" value="archived" />
           </el-select>
         </el-form-item>
         <el-form-item label="分类">
@@ -25,9 +24,9 @@
             <el-option label="全部" :value="undefined" />
             <el-option
               v-for="category in categories"
-              :key="category.id"
-              :label="category.name"
-              :value="category.id"
+              :key="category.sid"
+              :label="category.sortname"
+              :value="category.sid"
             />
           </el-select>
         </el-form-item>
@@ -79,43 +78,44 @@
         <el-table-column type="selection" width="55" />
         <el-table-column prop="title" label="标题" min-width="200">
           <template #default="{ row }">
-            <el-link v-if="row" type="primary" @click="handleEdit(row.id)">{{ row.title }}</el-link>
+            <el-link type="primary" @click="handleEdit(row.gid)">{{ row.title }}</el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="hide" label="状态" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row" :type="getStatusType(row.status)">
-              {{ getStatusText(row.status) }}
+            <el-tag :type="getStatusType(row.hide)">
+              {{ getStatusText(row.hide) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="category" label="分类" width="120">
+        <el-table-column prop="sortid" label="分类" width="120">
           <template #default="{ row }">
-            {{ row?.category?.name || '未分类' }}
+            {{ getCategoryName(row.sortid) }}
           </template>
         </el-table-column>
         <el-table-column prop="views" label="浏览" width="80" />
-        <el-table-column prop="created_at" label="发布时间" width="180">
+        <el-table-column prop="comnum" label="评论" width="80" />
+        <el-table-column prop="date" label="发布时间" width="180">
           <template #default="{ row }">
-            {{ row ? formatDate(row.created_at) : '' }}
+            {{ formatDate(row.date) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row" type="primary" link @click="handleEdit(row.id)">
+            <el-button type="primary" link @click="handleEdit(row.gid)">
               <el-icon><Edit /></el-icon>
               编辑
             </el-button>
             <el-button
-              v-if="row && row.status === 'draft'"
+              v-if="row.hide === 'y'"
               type="success"
               link
-              @click="handlePublish(row.id)"
+              @click="handlePublish(row.gid)"
             >
               <el-icon><Upload /></el-icon>
               发布
             </el-button>
-            <el-button v-if="row" type="danger" link @click="handleDelete(row.id)">
+            <el-button type="danger" link @click="handleDelete(row.gid)">
               <el-icon><Delete /></el-icon>
               删除
             </el-button>
@@ -145,8 +145,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Plus, Delete, Upload, Edit } from '@element-plus/icons-vue'
 import { postApi } from '@/api/post'
 import { categoryApi } from '@/api/category'
-import type { Post, Category, PostQueryParams } from '@/types'
-import dayjs from 'dayjs'
+import type { Post, Category, PostListParams } from '@/types'
 
 const router = useRouter()
 
@@ -164,7 +163,7 @@ const categories = ref<Category[]>([])
 const selectedIds = ref<number[]>([])
 
 // 查询参数
-const queryParams = reactive<PostQueryParams>({
+const queryParams = reactive<PostListParams>({
   page: 1,
   per_page: 10,
   keyword: '',
@@ -176,17 +175,9 @@ const queryParams = reactive<PostQueryParams>({
 const fetchPosts = async () => {
   loading.value = true
   try {
-    const params = { ...queryParams }
-    // 移除空值参数
-    Object.keys(params).forEach((key) => {
-      if (params[key as keyof PostQueryParams] === '' || params[key as keyof PostQueryParams] === undefined) {
-        delete params[key as keyof PostQueryParams]
-      }
-    })
-    
-    const res = await postApi.getList(params)
+    const res = await postApi.getList(queryParams)
     postList.value = res.items
-    total.value = res.total
+    total.value = res.pagination.total
   } catch (error) {
     ElMessage.error('获取文章列表失败')
   } finally {
@@ -297,32 +288,28 @@ const handleBatchPublish = async () => {
 
 // 选择变化
 const handleSelectionChange = (selection: Post[]) => {
-  selectedIds.value = selection.map((item) => item.id)
+  selectedIds.value = selection.map((item) => item.gid)
 }
 
 // 获取状态类型
-const getStatusType = (status: string) => {
-  const types: Record<string, string> = {
-    published: 'success',
-    draft: 'info',
-    archived: 'warning'
-  }
-  return types[status] || 'info'
+const getStatusType = (hide: string) => {
+  return hide === 'n' ? 'success' : 'info'
 }
 
 // 获取状态文本
-const getStatusText = (status: string) => {
-  const texts: Record<string, string> = {
-    published: '已发布',
-    draft: '草稿',
-    archived: '已归档'
-  }
-  return texts[status] || status
+const getStatusText = (hide: string) => {
+  return hide === 'n' ? '已发布' : '草稿'
+}
+
+// 获取分类名称
+const getCategoryName = (sortid: number) => {
+  const category = categories.value.find(c => c.sid === sortid)
+  return category?.sortname || '未分类'
 }
 
 // 格式化日期
-const formatDate = (date: string) => {
-  return dayjs(date).format('YYYY-MM-DD HH:mm')
+const formatDate = (timestamp: number) => {
+  return new Date(timestamp * 1000).toLocaleString()
 }
 
 // 初始化

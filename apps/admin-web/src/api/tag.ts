@@ -1,44 +1,45 @@
 import { request } from '@/utils/request'
-import type { Tag, PaginatedResponse, PaginationParams } from '@/types'
+import type { Tag, ApiResponse } from '@/types'
 
 export const tagApi = {
   // 获取标签列表
-  getList(params?: PaginationParams) {
-    return request.get<PaginatedResponse<Tag>>('/tags', params)
+  getList() {
+    return request.get<ApiResponse<Tag[]>>('/api/v2/tags')
   },
   
   // 获取所有标签(不分页)
   getAll() {
-    return request.get<Tag[]>('/tags/all')
+    return request.get<ApiResponse<Tag[]>>('/api/v2/tags')
+      .then(res => res.data || [])
+  },
+  
+  // 获取热门标签
+  getPopular(limit: number = 20) {
+    return request.get<ApiResponse<Tag[]>>('/api/v2/tags', { 
+      params: { popular: true, limit } 
+    }).then(res => res.data || [])
   },
   
   // 获取标签详情
   getDetail(id: number) {
-    return request.get<Tag>(`/tags/${id}`)
+    return request.get<ApiResponse<Tag>>(`/api/v2/tags/${id}`)
+      .then(res => res.data)
   },
   
   // 创建标签
-  create(data: Partial<Tag>) {
-    return request.post<Tag>('/tags', data)
+  create(data: { tagname: string }) {
+    return request.post<ApiResponse<Tag>>('/api/v2/tags', data)
+      .then(res => res.data)
   },
   
   // 更新标签
-  update(id: number, data: Partial<Tag>) {
-    return request.put<Tag>(`/tags/${id}`, data)
+  update(id: number, data: { tagname: string }) {
+    return request.put<ApiResponse<Tag>>(`/api/v2/tags/${id}`, data)
+      .then(res => res.data)
   },
   
   // 删除标签
   delete(id: number) {
-    return request.delete(`/tags/${id}`)
-  },
-  
-  // 批量删除标签
-  batchDelete(ids: number[]) {
-    return request.post('/tags/batch-delete', { ids })
-  },
-  
-  // 合并标签
-  merge(sourceId: number, targetId: number) {
-    return request.post('/tags/merge', { source_id: sourceId, target_id: targetId })
+    return request.delete<ApiResponse<void>>(`/api/v2/tags/${id}`)
   }
 }

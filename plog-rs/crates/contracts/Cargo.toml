@@ -1,0 +1,12 @@
+[package]
+name = "plog-contracts"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS API Contracts"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }

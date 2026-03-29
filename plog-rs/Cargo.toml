@@ -1,11 +1,5 @@
 [workspace]
-name = "plog-rs"
-version = "0.1.0"
-edition = "2021"
-description = "Plog CMS Rust Core Service"
-license = "MIT"
-repository = "https://github.com/plog/plog-rs"
-
+resolver = "2"
 members = [
     "crates/contracts",
     "crates/core",

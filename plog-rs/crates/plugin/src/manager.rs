@@ -1,7 +1,6 @@
 //! 插件管理器
 
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use plog_core::{PlogError, PlogResult};
 

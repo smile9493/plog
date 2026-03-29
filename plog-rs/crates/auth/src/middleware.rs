@@ -1,0 +1,161 @@
+//! Axum 认证中间件
+
+use axum::{
+    extract::{FromRef, FromRequestParts, Request, State},
+    http::{header::AUTHORIZATION, request::Parts, StatusCode},
+    middleware::Next,
+    response::{IntoResponse, Response},
+};
+use serde_json::json;
+use std::sync::Arc;
+
+use crate::{Claims, JwtService};
+
+/// 认证状态
+#[derive(Clone)]
+pub struct AuthState {
+    pub jwt: Arc<JwtService>,
+}
+
+/// 已认证用户
+#[derive(Debug, Clone)]
+pub struct AuthUser {
+    pub user_id: i32,
+    pub username: String,
+    pub role: String,
+}
+
+impl AuthUser {
+    /// 检查是否为管理员
+    pub fn is_admin(&self) -> bool {
+        self.role == "admin"
+    }
+
+    /// 检查是否为编辑
+    pub fn is_editor(&self) -> bool {
+        self.role == "editor" || self.role == "admin"
+    }
+
+    /// 检查权限
+    pub fn has_role(&self, required_role: &str) -> bool {
+        match required_role {
+            "admin" => self.role == "admin",
+            "editor" => self.is_editor(),
+            "user" => true,
+            _ => false,
+        }
+    }
+}
+
+impl From<Claims> for AuthUser {
+    fn from(claims: Claims) -> Self {
+        Self {
+            user_id: claims.sub,
+            username: claims.username,
+            role: claims.role,
+        }
+    }
+}
+
+/// 从请求中提取 AuthUser
+#[axum::async_trait]
+impl<S> FromRequestParts<S> for AuthUser
+where
+    S: Send + Sync,
+    AuthState: FromRef<S>,
+{
+    type Rejection = AuthError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let auth_state = AuthState::from_ref(state);
+
+        let token = extract_token_from_header(parts)?;
+        let claims = auth_state
+            .jwt
+            .validate_token(&token)
+            .map_err(|_| AuthError::InvalidToken)?;
+
+        Ok(AuthUser::from(claims))
+    }
+}
+
+/// 从请求头提取 Token
+fn extract_token_from_header(parts: &Parts) -> Result<String, AuthError> {
+    let header = parts
+        .headers
+        .get(AUTHORIZATION)
+        .ok_or(AuthError::MissingToken)?
+        .to_str()
+        .map_err(|_| AuthError::InvalidToken)?;
+
+    if !header.starts_with("Bearer ") {
+        return Err(AuthError::InvalidToken);
+    }
+
+    Ok(header[7..].to_string())
+}
+
+/// 认证中间件
+pub async fn auth_middleware(
+    State(state): State<AuthState>,
+    request: Request,
+    next: Next,
+) -> Response {
+    let (mut parts, body) = request.into_parts();
+
+    let token = match extract_token_from_header(&parts) {
+        Ok(token) => token,
+        Err(err) => return err.into_response(),
+    };
+
+    match state.jwt.validate_token(&token) {
+        Ok(claims) => {
+            let user = AuthUser::from(claims);
+            parts.extensions.insert(user);
+            let request = Request::from_parts(parts, body);
+            next.run(request).await
+        }
+        Err(_) => AuthError::InvalidToken.into_response(),
+    }
+}
+
+/// 权限检查中间件工厂
+pub fn require_role(required_role: &'static str) -> impl Fn(AuthUser, Request, Next) -> std::pin::Pin<Box<dyn std::future::Future<Output = Response> + Send>> + Clone {
+    move |user: AuthUser, request: Request, next: Next| -> std::pin::Pin<Box<dyn std::future::Future<Output = Response> + Send>> {
+        if !user.has_role(required_role) {
+            Box::pin(async { AuthError::InsufficientPermissions.into_response() })
+        } else {
+            Box::pin(async move { next.run(request).await })
+        }
+    }
+}
+
+/// 认证错误类型
+#[derive(Debug)]
+pub enum AuthError {
+    MissingToken,
+    InvalidToken,
+    InsufficientPermissions,
+}
+
+impl IntoResponse for AuthError {
+    fn into_response(self) -> Response {
+        let (status, message) = match self {
+            AuthError::MissingToken => (StatusCode::UNAUTHORIZED, "Missing authorization token"),
+            AuthError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid or expired token"),
+            AuthError::InsufficientPermissions => {
+                (StatusCode::FORBIDDEN, "Insufficient permissions")
+            }
+        };
+
+        let body = json!({
+            "success": false,
+            "error": {
+                "code": status.as_u16(),
+                "message": message
+            }
+        });
+
+        (status, axum::Json(body)).into_response()
+    }
+}

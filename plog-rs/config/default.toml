@@ -1,0 +1,19 @@
+# Plog API 配置
+
+[app]
+name = "Plog CMS"
+env = "development"
+debug = true
+
+[database]
+url = "mysql://plog:password@localhost:3306/plog"
+max_connections = 10
+min_connections = 2
+
+[auth]
+jwt_secret = "your-secret-key-change-in-production"
+jwt_expiration = 86400
+
+[server]
+host = "127.0.0.1"
+port = 8080

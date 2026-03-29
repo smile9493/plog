@@ -1,0 +1,23 @@
+[package]
+name = "plog-api"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS API Service"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../core" }
+plog-auth = { path = "../auth" }
+plog-content = { path = "../content" }
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+sea-orm = { workspace = true }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }

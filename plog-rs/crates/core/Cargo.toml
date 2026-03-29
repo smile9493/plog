@@ -1,0 +1,17 @@
+[package]
+name = "plog-core"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Core Library"
+license = "MIT"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+config = { workspace = true }

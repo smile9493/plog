@@ -1,0 +1,115 @@
+//! Plog CMS API Service
+//! 
+//! API 服务入口
+
+mod routes;
+
+use axum::{routing::get, Router, Json, middleware, http::Request, response::Response};
+use std::sync::Arc;
+use tower_http::cors::CorsLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use axum::extract::FromRef;
+
+/// 应用状态
+#[derive(Clone)]
+pub struct AppState {
+    pub db: sea_orm::DatabaseConnection,
+    pub jwt: Arc<plog_auth::JwtService>,
+}
+
+/// 从 AppState 提取 AuthState
+impl FromRef<AppState> for plog_auth::AuthState {
+    fn from_ref(state: &AppState) -> Self {
+        plog_auth::AuthState {
+            jwt: state.jwt.clone(),
+        }
+    }
+}
+
+/// 请求 ID 中间件
+async fn request_id_middleware(mut request: Request<axum::body::Body>, next: axum::middleware::Next) -> Response {
+    // 生成请求 ID
+    let request_id = uuid::Uuid::new_v4().to_string();
+    
+    // 将请求 ID 添加到请求头
+    request.headers_mut().insert(
+        "x-request-id",
+        request_id.parse().unwrap(),
+    );
+    
+    // 将请求 ID 添加到 tracing span
+    let span = tracing::info_span!("request", request_id = %request_id);
+    let _guard = span.enter();
+    
+    // 继续处理请求
+    let mut response = next.run(request).await;
+    
+    // 将请求 ID 添加到响应头
+    response.headers_mut().insert(
+        "x-request-id",
+        request_id.parse().unwrap(),
+    );
+    
+    response
+}
+
+/// 启动 API 服务
+pub async fn run() -> anyhow::Result<()> {
+    // 初始化日志
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| "plog_api=debug,tower_http=debug".into()))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+    // 加载配置
+    let config = plog_core::config::AppConfig::load()
+        .map_err(|e| anyhow::anyhow!("Failed to load config: {}", e))?;
+
+    // 连接数据库
+    let db = sea_orm::Database::connect(&config.database.url).await?;
+
+    // 创建 JWT 服务
+    let jwt = Arc::new(plog_auth::JwtService::new(
+        &config.auth.jwt_secret,
+        config.auth.jwt_expiration,
+    ));
+
+    // 创建应用状态
+    let state = AppState { db, jwt: jwt.clone() };
+
+    // 创建路由
+    let app = Router::new()
+        .route("/", get(root_handler))
+        .route("/health", get(health_handler))
+        .merge(routes::auth::routes())
+        .merge(routes::posts::routes())
+        .merge(routes::categories::routes())
+        .merge(routes::tags::routes())
+        .merge(routes::comments::routes())
+        .layer(middleware::from_fn(request_id_middleware))
+        .layer(CorsLayer::permissive())
+        .with_state(state);
+
+    // 启动服务器
+    let addr = format!("{}:{}", config.server.host, config.server.port);
+    tracing::info!("Starting server on {}", addr);
+
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    axum::serve(listener, app).await?;
+
+    Ok(())
+}
+
+/// 根路由处理
+async fn root_handler() -> &'static str {
+    "Plog CMS API v2"
+}
+
+/// 健康检查处理
+async fn health_handler() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "status": "ok",
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    }))
+}

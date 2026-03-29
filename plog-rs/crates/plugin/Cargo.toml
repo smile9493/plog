@@ -1,0 +1,13 @@
+[package]
+name = "plog-plugin"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Plugin Module"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+async-trait = { workspace = true }
+tracing = { workspace = true }

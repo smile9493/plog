@@ -1,0 +1,17 @@
+[package]
+name = "plog-media"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Media Module"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../core" }
+plog-contracts = { path = "../contracts" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sea-orm = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }

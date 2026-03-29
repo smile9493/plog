@@ -2060,6 +2060,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "plog-media"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "plog-contracts",
+ "plog-core",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "plog-migrations"
 version = "0.1.0"
 dependencies = [

@@ -8,6 +8,7 @@ export interface User {
   description?: string
   role: 'admin' | 'editor' | 'user'
   create_time: number
+  avatar?: string
 }
 
 export interface UserListParams {
@@ -54,6 +55,19 @@ export interface Post {
   allow_remark: string
   password?: string
   alias?: string
+  category_id?: number
+  tags?: number[]
+  status?: string
+}
+
+export interface PostForm {
+  title: string
+  content: string
+  excerpt?: string
+  cover?: string
+  category_id?: number
+  tags?: number[]
+  status: string
 }
 
 export interface PostListParams {
@@ -84,6 +98,9 @@ export interface Category {
   sortorder: number
   description?: string
   alias?: string
+  id?: number
+  name?: string
+  slug?: string
 }
 
 // 标签相关类型
@@ -91,6 +108,9 @@ export interface Tag {
   tid: number
   tagname: string
   usenum: number
+  id?: number
+  name?: string
+  slug?: string
 }
 
 // 评论相关类型
@@ -130,6 +150,20 @@ export interface ApiResponse<T = any> {
   meta?: {
     request_id: string
     timestamp: string
+  }
+  items?: T
+  total?: number
+}
+
+// 分页响应类型
+export interface PaginatedResponse<T = any> {
+  items: T[]
+  pagination: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+    has_more: boolean
   }
 }
 

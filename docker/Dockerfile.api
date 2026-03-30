@@ -1,0 +1,42 @@
+# =============================================================================
+# Rust API Dockerfile - 生产环境
+# 
+# 使用本地预构建的二进制文件
+# =============================================================================
+
+# 使用 nginx:alpine 镜像（已存在于本地）
+FROM nginx:alpine
+
+WORKDIR /app
+
+# 清除代理环境变量
+ENV HTTP_PROXY= \
+    HTTPS_PROXY= \
+    http_proxy= \
+    https_proxy=
+
+# 复制配置文件
+COPY plog-rs/config/ /app/config/
+
+# 创建必要目录
+RUN mkdir -p /app/content/uploads \
+    && mkdir -p /app/content/plugins \
+    && mkdir -p /app/content/themes \
+    && mkdir -p /app/content/cache \
+    && mkdir -p /app/content/logs
+
+# 复制内容目录
+COPY content/ /app/content/
+
+# 二进制文件通过 docker-compose.yml 挂载提供
+# 不在这里 COPY
+
+# 暴露端口
+EXPOSE 8080
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --spider http://127.0.0.1:8080/health || exit 1
+
+# 启动命令
+CMD ["/app/plog-api"]

@@ -6,7 +6,7 @@ env = "development"
 debug = true
 
 [database]
-url = "mysql://plog:password@localhost:3306/plog"
+url = "mysql://plog:plog123@localhost:3306/plog"
 max_connections = 10
 min_connections = 2
 
@@ -15,5 +15,5 @@ jwt_secret = "your-secret-key-change-in-production"
 jwt_expiration = 86400
 
 [server]
-host = "127.0.0.1"
+host = "0.0.0.0"
 port = 8080

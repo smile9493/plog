@@ -1,7 +1,12 @@
 # =============================================================================
-# Plog CMS Docker Compose
+# Plog CMS Docker Compose - 生产环境
 # 
-# 纯 Rust 架构
+# 完整的建站系统，包含：
+# - 后端 API 服务 (Rust)
+# - 管理后台 (Vue 3)
+# - 前台展示网站
+# - MySQL 数据库
+# - Nginx 反向代理
 # =============================================================================
 
 services:
@@ -10,10 +15,10 @@ services:
     image: mysql:8.0
     container_name: plog-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: plog
-      MYSQL_USER: plog
-      MYSQL_PASSWORD: plog123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-plog}
+      MYSQL_USER: ${MYSQL_USER:-plog}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-plog123}
     ports:
       - "3306:3306"
     volumes:
@@ -24,42 +29,106 @@ services:
       timeout: 5s
       retries: 10
     restart: unless-stopped
+    networks:
+      - plog-network
 
-  # Plog API 服务
+  # Rust API 服务
   api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.api
     container_name: plog-api
     environment:
-      DATABASE_URL: mysql://plog:plog123@mysql:3306/plog
-      JWT_SECRET: your-secret-key-change-in-production
-      RUST_LOG: plog_api=debug,tower_http=debug
+      DATABASE_URL: mysql://${MYSQL_USER:-plog}:${MYSQL_PASSWORD:-plog123}@mysql:3306/${MYSQL_DATABASE:-plog}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      RUST_LOG: ${RUST_LOG:-info}
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 8080
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
     ports:
       - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
     volumes:
-      - api_data:/app/content
+      - api_uploads:/app/content/uploads
+      - api_plugins:/app/content/plugins
+      - api_themes:/app/content/themes
+      - api_cache:/app/content/cache
+      - api_logs:/app/content/logs
+      # 挂载本地构建的二进制文件
+      - ../plog-rs/target/release/plog-api:/app/plog-api:ro
     restart: unless-stopped
+    networks:
+      - plog-network
 
-  # Admin Web 前端
+  # 管理后台前端
   admin-web:
-    image: node:20-alpine
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin-web
     container_name: plog-admin-web
-    working_dir: /app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
-    volumes:
-      - ../apps/admin-web:/app
     environment:
-      - VITE_API_BASE_URL=http://localhost:8080
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+    ports:
+      - "8081:80"
     restart: unless-stopped
+    networks:
+      - plog-network
+
+  # 前台展示网站
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: plog-frontend
+    environment:
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+    ports:
+      - "8082:80"
+    volumes:
+      - frontend_uploads:/usr/share/nginx/html/uploads
+    restart: unless-stopped
+    networks:
+      - plog-network
+
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: plog-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - api
+      - admin-web
+      - frontend
+    restart: unless-stopped
+    networks:
+      - plog-network
 
 volumes:
   mysql_data:
-  api_data:
+  api_uploads:
+  api_plugins:
+  api_themes:
+  api_cache:
+  api_logs:
+  frontend_uploads:
+  nginx_logs:
+
+networks:
+  plog-network:
+    driver: bridge

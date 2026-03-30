@@ -4,9 +4,7 @@ import type { User, LoginForm } from '@/types'
 export const authApi = {
   // 用户登录
   login(data: LoginForm) {
-    return request.post<{ token: string; user: User }>('/api.php', data, {
-      params: { route: 'auth/login' }
-    })
+    return request.post<{ token: string; user: User }>('/auth/login', data)
   },
   
   // 用户登出
@@ -16,7 +14,7 @@ export const authApi = {
   
   // 获取当前用户信息
   getCurrentUser() {
-    return request.get<User>('/auth/user')
+    return request.get<User>('/auth/me')
   },
   
   // 刷新 token

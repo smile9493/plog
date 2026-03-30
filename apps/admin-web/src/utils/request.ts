@@ -41,14 +41,19 @@ service.interceptors.response.use(
     
     const { data } = response
     
-    // 如果返回的状态码为 200，说明接口请求成功
+    // 如果返回 success: true，说明接口请求成功
+    if (data.success === true) {
+      return data.data
+    }
+    
+    // 如果返回的状态码为 200 或 0，说明接口请求成功
     if (data.code === 200 || data.code === 0) {
       return data.data
     }
     
     // 其他状态码都当作错误处理
-    ElMessage.error(data.message || '请求失败')
-    return Promise.reject(new Error(data.message || '请求失败'))
+    ElMessage.error(data.message || data.error?.message || '请求失败')
+    return Promise.reject(new Error(data.message || data.error?.message || '请求失败'))
   },
   (error: AxiosError) => {
     NProgress.done()

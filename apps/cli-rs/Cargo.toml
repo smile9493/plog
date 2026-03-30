@@ -1,0 +1,27 @@
+[package]
+name = "plog-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS CLI"
+license = "MIT"
+
+[[bin]]
+name = "plog"
+path = "src/main.rs"
+
+[dependencies]
+plog-core = { path = "../../plog-rs/crates/core" }
+plog-settings = { path = "../../plog-rs/crates/settings" }
+plog-plugin = { path = "../../plog-rs/crates/plugin" }
+plog-theme = { path = "../../plog-rs/crates/theme" }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sea-orm = { version = "1.0", features = ["sqlx-mysql", "runtime-tokio-rustls", "macros"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap = { version = "4", features = ["derive"] }
+colored = "2"
+tabled = "0.15"
+anyhow = "1"

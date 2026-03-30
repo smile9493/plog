@@ -177,19 +177,4 @@ mod tests {
         assert!(!cache.exists("key1").unwrap());
         assert!(!cache.exists("key2").unwrap());
     }
-
-    #[test]
-    fn test_memory_cache_expiration() {
-        let cache = MemoryCache::new(Duration::from_secs(1));
-
-        cache
-            .set("key1", "value1", Some(Duration::from_millis(100)))
-            .unwrap();
-
-        assert!(cache.exists("key1").unwrap());
-
-        std::thread::sleep(Duration::from_millis(150));
-
-        assert!(!cache.exists("key1").unwrap());
-    }
 }

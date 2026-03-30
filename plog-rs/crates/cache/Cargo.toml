@@ -1,0 +1,15 @@
+[package]
+name = "plog-cache"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Cache Module"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+async-trait = { workspace = true }

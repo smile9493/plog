@@ -5,28 +5,22 @@
 # =============================================================================
 
 # -----------------------------------------------------------------------------
-# 阶段 1: 构建阶段
+# 阶段 1: 构建阶段 (使用 Debian 基础镜像)
 # -----------------------------------------------------------------------------
-FROM rust:1.75-alpine AS builder
+FROM rust:latest AS builder
+
+# 构建参数 - 代理设置
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
 
 WORKDIR /app
 
-# 配置 Alpine 镜像源（加速）
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
 # 安装构建依赖
-RUN apk add --no-cache \
-    musl-dev \
-    pkgconfig \
-    openssl-dev \
-    mariadb-connector-c-dev
-
-# 配置 Rust crates 镜像源（加速）
-RUN mkdir -p /root/.cargo && \
-    echo '[source.crates-io]' > /root/.cargo/config.toml && \
-    echo 'replace-with = "ustc"' >> /root/.cargo/config.toml && \
-    echo '[source.ustc]' >> /root/.cargo/config.toml && \
-    echo 'registry = "https://mirrors.ustc.edu.cn/crates.io-index"' >> /root/.cargo/config.toml
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    libmariadb-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # 复制 Cargo 文件以利用 Docker 缓存
 COPY plog-rs/Cargo.toml plog-rs/Cargo.lock ./
@@ -46,20 +40,17 @@ COPY plog-rs/src ./src
 RUN cargo build --release
 
 # -----------------------------------------------------------------------------
-# 阶段 2: 运行阶段
+# 阶段 2: 运行阶段 (使用 Debian slim)
 # -----------------------------------------------------------------------------
-FROM alpine:3.19
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# 配置 Alpine 镜像源（加速）
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
 # 安装运行时依赖
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     ca-certificates \
-    libgcc \
-    mariadb-connector-c
+    libmariadb3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # 从构建阶段复制二进制文件
 COPY --from=builder /app/target/release/plog-api /app/plog-api

@@ -10,6 +10,7 @@ members = [
     "crates/audit",
     "crates/plugin",
     "crates/theme",
+    "crates/cache",
     "crates/api",
     "migrations",
 ]
@@ -35,7 +36,7 @@ anyhow = { workspace = true }
 axum = { version = "0.7", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "compression-deflate", "compression-zstd"] }
 
 # 数据库
 sea-orm = { version = "1.0", features = ["sqlx-mysql", "runtime-tokio-rustls", "macros"] }

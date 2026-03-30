@@ -77,8 +77,7 @@ const icons = {
   SuccessFilled,
   CircleCheck,
   CircleClose,
-  UploadFilled,
-  Lock
+  UploadFilled
 }
 
 for (const [key, component] of Object.entries(icons)) {

@@ -1,22 +1,10 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { resolve } from 'path'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/admin/',
-  plugins: [
-    vue(),
-    AutoImport({
-      resolvers: [ElementPlusResolver()],
-    }),
-    Components({
-      resolvers: [ElementPlusResolver()],
-    }),
-  ],
+  plugins: [vue()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
@@ -27,9 +15,8 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:18080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api.php')
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   },
@@ -42,15 +29,15 @@ export default defineConfig({
         entryFileNames: 'js/[name]-[hash].js',
         assetFileNames: '[ext]/[name]-[hash].[ext]',
         manualChunks(id) {
-          // Element Plus 单独打包
+          // Element Plus单独打包
           if (id.includes('element-plus')) {
             return 'element-plus'
           }
-          // Vue 相关库单独打包
+          // Vue相关库单独打包
           if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
             return 'vue-vendor'
           }
-          // Markdown 编辑器单独打包
+          // Markdown编辑器单独打包
           if (id.includes('md-editor-v3')) {
             return 'md-editor'
           }
@@ -61,7 +48,7 @@ export default defineConfig({
         }
       }
     },
-    // 提高 chunk 大小警告阈值
+    // 提高chunk大小警告阈值
     chunkSizeWarningLimit: 1000
   }
 })

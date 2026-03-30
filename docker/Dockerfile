@@ -1,33 +1,21 @@
 # =============================================================================
 # Plog CMS Docker Configuration
 # 
-# 纯 Rust 架构 - 多阶段构建
+# 纯 Rust 架构 - 使用预构建二进制
 # =============================================================================
 
-# Build stage
-FROM rust:1.77 as builder
+# 使用 Alpine 作为基础镜像（更小更快）
+FROM alpine:3.19
 
 WORKDIR /app
 
-# 安装依赖
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+# 安装运行时依赖
+RUN apk add --no-cache \
+    ca-certificates \
+    libgcc
 
-# 复制源代码
-COPY plog-rs/ .
-
-# 构建
-RUN cargo build --release --bin plog-api
-
-# Runtime stage - 使用 Debian slim
-FROM debian:bookworm-slim
-
-WORKDIR /app
-
-# 复制构建产物
-COPY --from=builder /app/target/release/plog-api /app/plog-api
+# 复制预构建的 Linux 二进制文件
+COPY plog-rs/target/release/plog-api.exe /app/plog-api
 
 # 复制配置文件
 COPY plog-rs/config/ /app/config/

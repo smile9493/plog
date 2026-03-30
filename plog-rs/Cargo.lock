@@ -2112,6 +2112,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "plog-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "plog-api",
+ "tokio",
+]
+
+[[package]]
 name = "plog-settings"
 version = "0.1.0"
 dependencies = [

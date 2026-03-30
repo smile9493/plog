@@ -10,7 +10,6 @@ services:
       MYSQL_ROOT_PASSWORD: root123456
     volumes:
       - mysql_dev_data:/var/lib/mysql
-      - ./init-admin.sql:/docker-entrypoint-initdb.d/init.sql
 
   plog:
     image: mytheme-app:latest
@@ -30,7 +29,7 @@ services:
       - "18080:80"
     volumes:
       - ../:/var/www/html
-      - ../apps/admin-web/dist:/var/www/html/admin-web:ro
+      - ./content/templates/mytheme:/var/www/html/content/templates/mytheme
       - cache_data:/var/www/html/content/cache
 
 volumes:

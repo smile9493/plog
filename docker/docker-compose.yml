@@ -4,8 +4,6 @@
 # 纯 Rust 架构
 # =============================================================================
 
-version: '3.8'
-
 services:
   # MySQL 数据库
   mysql:
@@ -24,7 +22,8 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+    restart: unless-stopped
 
   # Plog API 服务
   api:
@@ -34,8 +33,10 @@ services:
     container_name: plog-api
     environment:
       DATABASE_URL: mysql://plog:plog123@mysql:3306/plog
-      JWT_SECRET: your-secret-key-here
-      RUST_LOG: plog_api=debug
+      JWT_SECRET: your-secret-key-change-in-production
+      RUST_LOG: plog_api=debug,tower_http=debug
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
     ports:
       - "8080:8080"
     depends_on:
@@ -57,20 +58,6 @@ services:
       - ../apps/admin-web:/app
     environment:
       - VITE_API_BASE_URL=http://localhost:8080
-    restart: unless-stopped
-
-  # Nginx 反向代理
-  nginx:
-    image: nginx:alpine
-    container_name: plog-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ../plog-rs/config/nginx/plog.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - api
-      - admin-web
     restart: unless-stopped
 
 volumes:

@@ -1,6 +1,6 @@
 //! Plog CMS Theme Module
-//! 
-//! 主题管理模块
+//!
+//! 主题管理模块 - 基于 manifest 驱动
 
 pub mod manager;
 pub mod types;

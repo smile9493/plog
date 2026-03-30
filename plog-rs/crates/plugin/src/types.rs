@@ -3,7 +3,6 @@
 //! 基于 contracts 模块的插件 manifest 规范
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::Path;
 
 pub use plog_contracts::plugin::{

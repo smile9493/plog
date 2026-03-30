@@ -1,189 +1,240 @@
 //! Theme 单元测试
 
 use plog_theme::*;
+use std::path::Path;
 
 /// 测试主题管理器创建
 #[test]
 fn test_theme_manager_new() {
-    let manager = ThemeManager::new();
-    assert_eq!(manager.get_all_themes().len(), 0);
+    let manager = ThemeManager::new("/tmp/themes");
+    assert_eq!(manager.count(), 0);
     assert!(manager.get_active_theme().is_none());
 }
 
-/// 测试加载主题
+/// 测试主题状态
 #[test]
-fn test_load_theme() {
-    let mut manager = ThemeManager::new();
+fn test_theme_status() {
+    assert_eq!(ThemeStatus::Active, ThemeStatus::Active);
+    assert_ne!(ThemeStatus::Active, ThemeStatus::Installed);
+    assert_ne!(ThemeStatus::Installed, ThemeStatus::NotInstalled);
+}
 
-    let info = types::ThemeInfo {
-        name: "test-theme".to_string(),
+/// 测试主题 manifest 解析
+#[test]
+fn test_manifest_parse() {
+    let toml_str = r#"
+id = "test-theme"
+name = "Test Theme"
+version = "1.0.0"
+description = "A test theme"
+author = "Test Author"
+license = "MIT"
+
+[[layouts]]
+id = "default"
+name = "Default Layout"
+template = "layout.html"
+default = true
+
+[[slots]]
+id = "header"
+name = "Header"
+
+[[slots]]
+id = "footer"
+name = "Footer"
+
+[[page_templates]]
+id = "post"
+name = "Post Template"
+template = "post.html"
+page_type = "post"
+"#;
+
+    let manifest: ThemeManifest = toml::from_str(toml_str).unwrap();
+
+    assert_eq!(manifest.id, "test-theme");
+    assert_eq!(manifest.name, "Test Theme");
+    assert_eq!(manifest.version, "1.0.0");
+    assert_eq!(manifest.layouts.len(), 1);
+    assert_eq!(manifest.slots.len(), 2);
+    assert_eq!(manifest.page_templates.len(), 1);
+}
+
+/// 测试主题信息创建
+#[test]
+fn test_theme_info_from_manifest() {
+    let manifest = ThemeManifest {
+        id: "test-theme".to_string(),
+        name: "Test Theme".to_string(),
         version: "1.0.0".to_string(),
-        description: "Test theme".to_string(),
-        author: "Test".to_string(),
-        engine: types::ThemeEngine::Blade,
-        templates: std::collections::HashMap::new(),
-        assets: types::ThemeAssets {
-            css: vec!["style.css".to_string()],
-            js: vec!["app.js".to_string()],
-            images: vec![],
-        },
-        supports: vec!["responsive".to_string()],
+        description: Some("Test".to_string()),
+        author: Some("Test".to_string()),
+        homepage: None,
+        license: Some("MIT".to_string()),
+        requires: None,
+        preview: None,
+        layouts: vec![],
+        slots: vec![],
+        page_templates: vec![],
+        settings_schema: None,
+        settings_defaults: None,
+        assets: None,
+        supported_features: vec![],
     };
 
-    let result = manager.load_theme("test-theme", info);
-    assert!(result.is_ok());
+    let info = ThemeInfo::from_manifest(manifest, "/tmp/themes/test-theme");
+
+    assert_eq!(info.manifest.id, "test-theme");
+    assert_eq!(info.status, ThemeStatus::Installed);
+    assert!(info.installed_at.is_some());
 }
 
-/// 测试重复加载主题
+/// 测试布局获取
 #[test]
-fn test_load_duplicate_theme() {
-    let mut manager = ThemeManager::new();
-
-    let info = types::ThemeInfo {
-        name: "test-theme".to_string(),
+fn test_get_layout() {
+    let manifest = ThemeManifest {
+        id: "test".to_string(),
+        name: "Test".to_string(),
         version: "1.0.0".to_string(),
-        description: "Test theme".to_string(),
-        author: "Test".to_string(),
-        engine: types::ThemeEngine::Blade,
-        templates: std::collections::HashMap::new(),
-        assets: types::ThemeAssets {
-            css: vec![],
-            js: vec![],
-            images: vec![],
-        },
-        supports: vec![],
-    };
-
-    manager.load_theme("test-theme", info.clone()).unwrap();
-    let result = manager.load_theme("test-theme", info);
-    assert!(result.is_err());
-}
-
-/// 测试激活主题
-#[test]
-fn test_activate_theme() {
-    let mut manager = ThemeManager::new();
-
-    let info = types::ThemeInfo {
-        name: "test-theme".to_string(),
-        version: "1.0.0".to_string(),
-        description: "Test theme".to_string(),
-        author: "Test".to_string(),
-        engine: types::ThemeEngine::Blade,
-        templates: std::collections::HashMap::new(),
-        assets: types::ThemeAssets {
-            css: vec![],
-            js: vec![],
-            images: vec![],
-        },
-        supports: vec![],
-    };
-
-    manager.load_theme("test-theme", info).unwrap();
-    let result = manager.activate_theme("test-theme");
-    assert!(result.is_ok());
-
-    let active = manager.get_active_theme();
-    assert!(active.is_some());
-    assert_eq!(active.unwrap().name, "test-theme");
-}
-
-/// 测试激活不存在的主题
-#[test]
-fn test_activate_nonexistent_theme() {
-    let mut manager = ThemeManager::new();
-    let result = manager.activate_theme("nonexistent");
-    assert!(result.is_err());
-}
-
-/// 测试卸载主题
-#[test]
-fn test_unload_theme() {
-    let mut manager = ThemeManager::new();
-
-    let info = types::ThemeInfo {
-        name: "test-theme".to_string(),
-        version: "1.0.0".to_string(),
-        description: "Test theme".to_string(),
-        author: "Test".to_string(),
-        engine: types::ThemeEngine::Blade,
-        templates: std::collections::HashMap::new(),
-        assets: types::ThemeAssets {
-            css: vec![],
-            js: vec![],
-            images: vec![],
-        },
-        supports: vec![],
-    };
-
-    manager.load_theme("test-theme", info).unwrap();
-    let result = manager.unload_theme("test-theme");
-    assert!(result.is_ok());
-}
-
-/// 测试卸载激活中的主题
-#[test]
-fn test_unload_active_theme() {
-    let mut manager = ThemeManager::new();
-
-    let info = types::ThemeInfo {
-        name: "test-theme".to_string(),
-        version: "1.0.0".to_string(),
-        description: "Test theme".to_string(),
-        author: "Test".to_string(),
-        engine: types::ThemeEngine::Blade,
-        templates: std::collections::HashMap::new(),
-        assets: types::ThemeAssets {
-            css: vec![],
-            js: vec![],
-            images: vec![],
-        },
-        supports: vec![],
-    };
-
-    manager.load_theme("test-theme", info).unwrap();
-    manager.activate_theme("test-theme").unwrap();
-
-    // 应该失败，不能卸载激活中的主题
-    let result = manager.unload_theme("test-theme");
-    assert!(result.is_err());
-}
-
-/// 测试获取所有主题
-#[test]
-fn test_get_all_themes() {
-    let mut manager = ThemeManager::new();
-
-    for i in 1..=3 {
-        let info = types::ThemeInfo {
-            name: format!("theme-{}", i),
-            version: "1.0.0".to_string(),
-            description: format!("Theme {}", i),
-            author: "Test".to_string(),
-            engine: types::ThemeEngine::Blade,
-            templates: std::collections::HashMap::new(),
-            assets: types::ThemeAssets {
-                css: vec![],
-                js: vec![],
-                images: vec![],
+        description: None,
+        author: None,
+        homepage: None,
+        license: None,
+        requires: None,
+        preview: None,
+        layouts: vec![
+            LayoutDefinition {
+                id: "default".to_string(),
+                name: "Default".to_string(),
+                template: "layout.html".to_string(),
+                default: true,
             },
-            supports: vec![],
-        };
-        manager.load_theme(&format!("theme-{}", i), info).unwrap();
-    }
+            LayoutDefinition {
+                id: "sidebar".to_string(),
+                name: "Sidebar".to_string(),
+                template: "sidebar.html".to_string(),
+                default: false,
+            },
+        ],
+        slots: vec![],
+        page_templates: vec![],
+        settings_schema: None,
+        settings_defaults: None,
+        assets: None,
+        supported_features: vec![],
+    };
 
-    assert_eq!(manager.get_all_themes().len(), 3);
+    let info = ThemeInfo::from_manifest(manifest, "");
+
+    assert!(info.get_layout("default").is_some());
+    assert!(info.get_layout("sidebar").is_some());
+    assert!(info.get_layout("nonexistent").is_none());
+    assert!(info.get_default_layout().is_some());
 }
 
-/// 测试主题引擎类型
+/// 测试页面模板获取
 #[test]
-fn test_theme_engine() {
-    use types::ThemeEngine;
+fn test_get_page_templates() {
+    let manifest = ThemeManifest {
+        id: "test".to_string(),
+        name: "Test".to_string(),
+        version: "1.0.0".to_string(),
+        description: None,
+        author: None,
+        homepage: None,
+        license: None,
+        requires: None,
+        preview: None,
+        layouts: vec![],
+        slots: vec![],
+        page_templates: vec![PageTemplate {
+            id: "post".to_string(),
+            name: "Post".to_string(),
+            template: "post.html".to_string(),
+            page_type: Some("post".to_string()),
+        }],
+        settings_schema: None,
+        settings_defaults: None,
+        assets: None,
+        supported_features: vec![],
+    };
 
-    let blade = ThemeEngine::Blade;
-    let twig = ThemeEngine::Twig;
-    let custom = ThemeEngine::Custom("vue".to_string());
+    let info = ThemeInfo::from_manifest(manifest, "");
 
-    assert_ne!(blade, twig);
-    assert_ne!(blade, custom);
+    assert_eq!(info.get_page_templates().len(), 1);
+    assert_eq!(info.get_page_templates()[0].id, "post");
+}
+
+/// 测试特性支持
+#[test]
+fn test_supports_feature() {
+    let manifest = ThemeManifest {
+        id: "test".to_string(),
+        name: "Test".to_string(),
+        version: "1.0.0".to_string(),
+        description: None,
+        author: None,
+        homepage: None,
+        license: None,
+        requires: None,
+        preview: None,
+        layouts: vec![],
+        slots: vec![],
+        page_templates: vec![],
+        settings_schema: None,
+        settings_defaults: None,
+        assets: None,
+        supported_features: vec![ThemeFeature::Responsive, ThemeFeature::DarkMode],
+    };
+
+    let info = ThemeInfo::from_manifest(manifest, "");
+
+    assert!(info.supports_feature(&ThemeFeature::Responsive));
+    assert!(info.supports_feature(&ThemeFeature::DarkMode));
+    assert!(!info.supports_feature(&ThemeFeature::Search));
+}
+
+/// 测试布局定义
+#[test]
+fn test_layout_definition() {
+    let layout = LayoutDefinition {
+        id: "default".to_string(),
+        name: "Default Layout".to_string(),
+        template: "layout.html".to_string(),
+        default: true,
+    };
+
+    assert_eq!(layout.id, "default");
+    assert_eq!(layout.name, "Default Layout");
+    assert!(layout.default);
+}
+
+/// 测试插槽定义
+#[test]
+fn test_slot_definition() {
+    let slot = SlotDefinition {
+        id: "header".to_string(),
+        name: "Header".to_string(),
+        description: Some("Page header".to_string()),
+        default: Some("<header>Default</header>".to_string()),
+    };
+
+    assert_eq!(slot.id, "header");
+    assert_eq!(slot.name, "Header");
+    assert!(slot.default.is_some());
+}
+
+/// 测试页面模板
+#[test]
+fn test_page_template() {
+    let template = PageTemplate {
+        id: "post".to_string(),
+        name: "Post Template".to_string(),
+        template: "post.html".to_string(),
+        page_type: Some("post".to_string()),
+    };
+
+    assert_eq!(template.id, "post");
+    assert_eq!(template.template, "post.html");
 }

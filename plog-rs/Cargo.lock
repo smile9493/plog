@@ -2101,9 +2101,13 @@ name = "plog-plugin"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
+ "plog-contracts",
  "plog-core",
  "serde",
  "serde_json",
+ "thiserror 1.0.69",
+ "toml",
  "tracing",
 ]
 
@@ -2126,9 +2130,13 @@ name = "plog-theme"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
+ "plog-contracts",
  "plog-core",
  "serde",
  "serde_json",
+ "thiserror 1.0.69",
+ "toml",
  "tracing",
 ]
 

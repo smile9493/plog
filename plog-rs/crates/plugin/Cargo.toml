@@ -7,7 +7,11 @@ license = "MIT"
 
 [dependencies]
 plog-core = { path = "../core" }
+plog-contracts = { path = "../contracts" }
 serde = { workspace = true }
 serde_json = { workspace = true }
+toml = "0.8"
+chrono = { workspace = true }
 async-trait = { workspace = true }
 tracing = { workspace = true }
+thiserror = { workspace = true }

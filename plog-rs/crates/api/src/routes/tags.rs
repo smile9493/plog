@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::get,
     Router, Json,
 };
 use serde::Deserialize;
@@ -16,8 +16,8 @@ use plog_content::{repository::TagRepository, entities::tag};
 /// 创建标签路由
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/api/v2/tags", get(list_tags).post(create_tag))
-        .route("/api/v2/tags/:id", get(get_tag).put(update_tag).delete(delete_tag))
+        .route("/api/tags", get(list_tags).post(create_tag))
+        .route("/api/tags/:id", get(get_tag).put(update_tag).delete(delete_tag))
 }
 
 /// 查询参数

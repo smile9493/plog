@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::get,
     Router, Json,
 };
 use serde::Deserialize;
@@ -16,8 +16,8 @@ use plog_content::{repository::PostRepository, entities::post};
 /// 创建文章路由
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/api/v2/posts", get(list_posts).post(create_post))
-        .route("/api/v2/posts/:id", get(get_post).put(update_post).delete(delete_post))
+        .route("/api/posts", get(list_posts).post(create_post))
+        .route("/api/posts/:id", get(get_post).put(update_post).delete(delete_post))
 }
 
 /// 查询参数

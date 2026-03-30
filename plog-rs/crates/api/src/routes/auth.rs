@@ -1,7 +1,7 @@
 //! 认证路由
 
 use axum::{routing::post, Router, Json};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::sync::Arc;
 
 use crate::AppState;
@@ -16,9 +16,9 @@ pub struct LoginRequest {
 /// 创建认证路由
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/api/v1/auth/login", post(login))
-        .route("/api/v1/auth/logout", post(logout))
-        .route("/api/v1/auth/me", axum::routing::get(me))
+        .route("/api/auth/login", post(login))
+        .route("/api/auth/logout", post(logout))
+        .route("/api/auth/me", axum::routing::get(me))
 }
 
 /// 登录处理

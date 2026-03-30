@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, State},
-    routing::{get, post, put, delete},
+    routing::get,
     Router, Json,
 };
 use serde::Deserialize;
@@ -16,8 +16,8 @@ use plog_content::{repository::CategoryRepository, entities::category};
 /// 创建分类路由
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/api/v2/categories", get(list_categories).post(create_category))
-        .route("/api/v2/categories/:id", get(get_category).put(update_category).delete(delete_category))
+        .route("/api/categories", get(list_categories).post(create_category))
+        .route("/api/categories/:id", get(get_category).put(update_category).delete(delete_category))
 }
 
 /// 创建分类请求

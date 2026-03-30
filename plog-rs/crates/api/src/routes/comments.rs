@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::{get, post},
     Router, Json,
 };
 use serde::Deserialize;
@@ -16,9 +16,9 @@ use plog_content::{repository::CommentRepository, entities::comment};
 /// 创建评论路由
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/api/v2/comments", get(list_comments).post(create_comment))
-        .route("/api/v2/comments/:id", get(get_comment).put(update_comment).delete(delete_comment))
-        .route("/api/v2/comments/:id/approve", post(approve_comment))
+        .route("/api/comments", get(list_comments).post(create_comment))
+        .route("/api/comments/:id", get(get_comment).put(update_comment).delete(delete_comment))
+        .route("/api/comments/:id/approve", post(approve_comment))
 }
 
 /// 查询参数

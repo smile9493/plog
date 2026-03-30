@@ -14,6 +14,22 @@ members = [
     "migrations",
 ]
 
+[package]
+name = "plog-server"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Server"
+license = "MIT"
+
+[[bin]]
+name = "plog-api"
+path = "src/main.rs"
+
+[dependencies]
+plog-api = { path = "crates/api" }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+
 [workspace.dependencies]
 # Web 框架
 axum = { version = "0.7", features = ["macros"] }

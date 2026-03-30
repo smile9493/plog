@@ -1,0 +1,74 @@
+{
+  "id": "03-29-phase2-improvements",
+  "name": "03-29-phase2-improvements",
+  "title": "Phase2 改进 - API 统一响应与功能完善",
+  "description": "统一 API 响应格式、实现筛选功能、添加请求追踪、编写测试",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "api",
+  "priority": "P1",
+  "creator": "kilo",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "统一 posts 路由响应格式",
+      "status": "completed"
+    },
+    {
+      "name": "统一 categories 路由响应格式",
+      "status": "completed"
+    },
+    {
+      "name": "统一 tags 路由响应格式",
+      "status": "completed"
+    },
+    {
+      "name": "统一 comments 路由响应格式",
+      "status": "completed"
+    },
+    {
+      "name": "实现文章筛选功能",
+      "status": "completed"
+    },
+    {
+      "name": "添加请求 ID 中间件",
+      "status": "completed"
+    },
+    {
+      "name": "编写 auth 模块测试",
+      "status": "completed"
+    },
+    {
+      "name": "编写 content 模块测试",
+      "status": "completed"
+    },
+    {
+      "name": "生成 API 文档",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "plog-rs/crates/api/",
+    "plog-rs/crates/auth/",
+    "plog-rs/crates/content/",
+    "plog-rs/crates/core/src/types.rs",
+    "plog-rs/docs/API.md"
+  ],
+  "notes": "Phase 2 代码审查改进任务全部完成",
+  "meta": {
+    "phase": "phase2-improvements",
+    "estimated_weeks": 1,
+    "depends_on": "rust-phase2-nginx-routing"
+  }
+}

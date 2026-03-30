@@ -1,0 +1,71 @@
+{
+  "id": "rust-phase1-manifest-capabilities",
+  "name": "rust-phase1-manifest-capabilities",
+  "title": "Manifest 与能力声明",
+  "description": "建立标准化的 manifest 格式和能力声明机制，为插件/主题系统迁移做准备",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "plugin-theme",
+  "priority": "P1",
+  "creator": "ai-agent",
+  "assignee": null,
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "定义插件 manifest 基本字段",
+      "status": "completed"
+    },
+    {
+      "name": "定义插件能力声明",
+      "status": "completed"
+    },
+    {
+      "name": "定义插件 Hook 声明",
+      "status": "completed"
+    },
+    {
+      "name": "定义主题 manifest 基本字段",
+      "status": "completed"
+    },
+    {
+      "name": "定义主题模板声明",
+      "status": "completed"
+    },
+    {
+      "name": "定义能力声明规范",
+      "status": "completed"
+    },
+    {
+      "name": "实现 manifest 解析器",
+      "status": "completed"
+    },
+    {
+      "name": "实现迁移工具",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "plugins/",
+    "themes/",
+    "packages/core/src/Manifest/",
+    "docs/architecture/manifest-specification.md",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 1 边界收敛任务已完成",
+  "meta": {
+    "phase": "phase1",
+    "estimated_weeks": 2,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase1-three-state-design"
+  }
+}

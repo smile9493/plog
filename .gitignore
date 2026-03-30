@@ -1,24 +1,28 @@
-# Plog项目 .gitignore
+# Plog CMS - 纯 Rust 项目
 
-# ==================== 核心配置 ====================
-# 配置文件(包含敏感信息)
-config.php
-.htaccess
-.htpasswd
+# ==================== Rust 构建 ====================
+plog-rs/target/
+plog-rs/Cargo.lock
+
+# ==================== 前端构建 ====================
+apps/admin-web/node_modules/
+apps/admin-web/dist/
 
 # ==================== 内容目录 ====================
-# 上传文件目录
 content/uploadfile/*
 !content/uploadfile/.gitkeep
 
-# 缓存目录
 content/cache/*
 !content/cache/.gitkeep
 
+content/plugins/*
+!content/plugins/.gitkeep
+
+content/templates/*
+!content/templates/.gitkeep
+
 # ==================== 日志文件 ====================
 *.log
-dev/logs/*
-!dev/logs/.gitkeep
 
 # ==================== 临时文件 ====================
 *.tmp
@@ -28,88 +32,20 @@ dev/logs/*
 *.orig
 
 # ==================== IDE和编辑器 ====================
-# VSCode
 .vscode/
-*.code-workspace
-
-# JetBrains
 .idea/
-*.iml
-*.iws
-*.ipr
-
-# Sublime Text
 *.sublime-project
 *.sublime-workspace
 
-# Vim
-*.vim
-
-# Emacs
-*~
-\#*\#
-.\#*
-
-# macOS
+# ==================== 系统文件 ====================
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Windows
 Thumbs.db
-ehthumbs.db
 Desktop.ini
-$RECYCLE.BIN/
-*.lnk
-
-# Linux
-*~
-
-# ==================== 依赖目录 ====================
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-y!arn-error.log*
-package-lock.json
-yarn.lock
-
-# PHP
-vendor/
-composer.lock
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-*.egg-info/
-dist/
-build/
-
-# ==================== 备份文件 ====================
-backup/
-*.sql
-*.tar.gz
-*.tar.bz2
-*.zip
-*.rar
-*.7z
 
 # ==================== Docker ====================
-# Docker数据目录
-emlog_data/
-
-# Docker volumes (如果使用本地volume)
 .docker/
 
-# ==================== 开发工具 ====================
-# AI工具目录
+# ==================== AI工具目录 ====================
 .agents/
 .arts/
 .claude/
@@ -123,57 +59,17 @@ emlog_data/
 .trae/
 .trae-cn/
 
-# ==================== 测试和覆盖率 ====================
-# PHPUnit
-.phpunit.result.cache
-coverage/
-.clover/
-
-# 测试输出
-tests/output/
-tests/temp/
-
-# 代码检查报告
-phpcs-report.xml
-
-# ==================== 构建输出 ====================
-dist/
-build/
-output/
-release/
-
 # ==================== 敏感信息 ====================
-# 密钥和证书
 *.key
 *.pem
 *.crt
-*.p12
 secrets/
-.secrets/
 
-# API密钥
-.api_key
 .env
 .env.local
 .env.*.local
 
 # ==================== 数据库 ====================
-# 数据库文件
 *.db
 *.sqlite
 *.sqlite3
-*.mdb
-
-# ==================== 其他 ====================
-# 忽略所有隐藏文件(除了.gitignore等)
-.*
-!.gitignore
-!.gitattributes
-!.gitmodules
-!.editorconfig
-!.env.example
-!.travis.yml
-!.github/
-
-# 保留空目录的.gitkeep文件
-!.gitkeep

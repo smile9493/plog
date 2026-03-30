@@ -1,0 +1,12 @@
+# Docker ignore
+**/target/
+**/node_modules/
+**/.git/
+**/.trellis/
+**/compat/
+**/include/
+**/admin/
+**/vendor/
+**/emlog_data/
+*.log
+*.tmp

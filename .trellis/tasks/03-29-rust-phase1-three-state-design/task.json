@@ -1,0 +1,60 @@
+{
+  "id": "rust-phase1-three-state-design",
+  "name": "rust-phase1-three-state-design",
+  "title": "三态分离设计",
+  "description": "明确区分开发态、构建态和运行态，为 Rust 迁移建立清晰的架构边界",
+  "status": "completed",
+  "dev_type": "architecture",
+  "scope": "design",
+  "priority": "P1",
+  "creator": "ai-agent",
+  "assignee": null,
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "分析现有目录结构",
+      "status": "completed"
+    },
+    {
+      "name": "识别开发态内容",
+      "status": "completed"
+    },
+    {
+      "name": "识别构建态内容",
+      "status": "completed"
+    },
+    {
+      "name": "识别运行态内容",
+      "status": "completed"
+    },
+    {
+      "name": "编写三态分离设计文档",
+      "status": "completed"
+    },
+    {
+      "name": "设计代码结构调整方案",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "docs/architecture/three-state-design.md",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 1 边界收敛任务已完成",
+  "meta": {
+    "phase": "phase1",
+    "estimated_weeks": 1,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase1-domain-interfaces"
+  }
+}

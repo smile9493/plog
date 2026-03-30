@@ -1,0 +1,73 @@
+{
+  "id": "rust-phase2-content-api",
+  "name": "rust-phase2-content-api",
+  "title": "Rust 内容管理 API",
+  "description": "实现 Rust 内容管理 API，包括文章、分类、标签、评论的 CRUD 操作",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "api",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "实现 GET /posts (列表)",
+      "status": "completed"
+    },
+    {
+      "name": "实现 GET /posts/:id (详情)",
+      "status": "completed"
+    },
+    {
+      "name": "实现 POST /posts (创建)",
+      "status": "completed"
+    },
+    {
+      "name": "实现 PUT /posts/:id (更新)",
+      "status": "completed"
+    },
+    {
+      "name": "实现 DELETE /posts/:id (删除)",
+      "status": "completed"
+    },
+    {
+      "name": "实现分类管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "实现标签管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "实现评论管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "编写集成测试",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "plog-rs/crates/api/",
+    "plog-rs/crates/content/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 2 核心任务，内容管理 API 已完成",
+  "meta": {
+    "phase": "phase2",
+    "estimated_weeks": 3,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase2-auth-service"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "id": "rust-phase3-plugin-compat",
+  "name": "rust-phase3-plugin-compat",
+  "title": "插件兼容层",
+  "description": "建立插件兼容层，保持老插件可运行，桥接 PHP 插件和 Rust 核心",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "plugin",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "分析现有插件目录结构",
+      "status": "completed"
+    },
+    {
+      "name": "分析插件加载机制",
+      "status": "completed"
+    },
+    {
+      "name": "分析 Hook 系统",
+      "status": "completed"
+    },
+    {
+      "name": "设计插件接口",
+      "status": "completed"
+    },
+    {
+      "name": "实现插件加载器",
+      "status": "completed"
+    },
+    {
+      "name": "实现 Hook 桥接",
+      "status": "completed"
+    },
+    {
+      "name": "编写迁移工具",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "compat/plugin/",
+    "content/plugins/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 3 核心任务，插件兼容层已完成",
+  "meta": {
+    "phase": "phase3",
+    "estimated_weeks": 3,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase3-php-compat-layer"
+  }
+}

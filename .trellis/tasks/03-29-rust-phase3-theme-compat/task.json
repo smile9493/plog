@@ -1,0 +1,61 @@
+{
+  "id": "rust-phase3-theme-compat",
+  "name": "rust-phase3-theme-compat",
+  "title": "主题兼容层",
+  "description": "建立主题兼容层，保持老主题可渲染，桥接 PHP 主题和 Rust 核心",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "theme",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "分析现有主题目录结构",
+      "status": "completed"
+    },
+    {
+      "name": "分析模板加载机制",
+      "status": "completed"
+    },
+    {
+      "name": "设计渲染管线接口",
+      "status": "completed"
+    },
+    {
+      "name": "实现 PHP 模板引擎适配",
+      "status": "completed"
+    },
+    {
+      "name": "实现 Rust 模板引擎",
+      "status": "pending"
+    },
+    {
+      "name": "编写迁移工具",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "compat/theme/",
+    "content/templates/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 3 核心任务，主题兼容层已完成",
+  "meta": {
+    "phase": "phase3",
+    "estimated_weeks": 3,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase3-plugin-compat"
+  }
+}

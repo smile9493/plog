@@ -1,0 +1,77 @@
+{
+  "id": "rust-phase1-domain-interfaces",
+  "name": "rust-phase1-domain-interfaces",
+  "title": "领域模型接口抽象",
+  "description": "将 packages/* 中的领域逻辑抽象成清晰的接口，作为 PHP 和 Rust 实现的共同契约",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "domain",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": null,
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 4,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "定义 UserInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 UserRepositoryInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 PermissionInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 RoleInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 PostInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 CategoryInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 TagInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 CommentInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 PluginInterface",
+      "status": "completed"
+    },
+    {
+      "name": "定义 ThemeInterface",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "packages/core/src/Contracts/",
+    "docs/api/domain-interfaces.md",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 1 边界收敛核心任务已完成",
+  "meta": {
+    "phase": "phase1",
+    "estimated_weeks": 2,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase1-api-contract"
+  }
+}

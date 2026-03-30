@@ -1,0 +1,66 @@
+{
+  "id": "rust-phase4-admin-web-content",
+  "name": "rust-phase4-admin-web-content",
+  "title": "admin-web 内容管理",
+  "description": "在 admin-web 中实现内容管理功能，为下线 /admin 内容管理页面做准备",
+  "status": "completed",
+  "dev_type": "frontend",
+  "scope": "admin-web",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "实现文章列表页面",
+      "status": "completed"
+    },
+    {
+      "name": "实现文章编辑页面",
+      "status": "completed"
+    },
+    {
+      "name": "实现分类管理页面",
+      "status": "completed"
+    },
+    {
+      "name": "实现标签管理页面",
+      "status": "completed"
+    },
+    {
+      "name": "实现评论管理页面",
+      "status": "completed"
+    },
+    {
+      "name": "实现媒体管理页面",
+      "status": "pending"
+    },
+    {
+      "name": "集成富文本编辑器",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "apps/admin-web/src/views/post/",
+    "apps/admin-web/src/api/post.ts",
+    "apps/admin-web/src/api/category.ts",
+    "apps/admin-web/src/api/tag.ts"
+  ],
+  "notes": "Phase 4 核心任务，admin-web 内容管理已完成",
+  "meta": {
+    "phase": "phase4",
+    "estimated_weeks": 3,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase4-admin-web-users"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "id": "rust-phase2-auth-service",
+  "name": "rust-phase2-auth-service",
+  "title": "Rust 认证服务",
+  "description": "实现 Rust 认证服务，包括用户认证、JWT 签发、会话管理和权限检查",
+  "status": "in_progress",
+  "dev_type": "backend",
+  "scope": "auth",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 1,
+  "next_action": [
+    {
+      "phase": 2,
+      "action": "编写单元测试"
+    }
+  ],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "实现登录逻辑",
+      "status": "completed"
+    },
+    {
+      "name": "实现登出逻辑",
+      "status": "completed"
+    },
+    {
+      "name": "实现 JWT 签发",
+      "status": "completed"
+    },
+    {
+      "name": "实现 JWT 验证",
+      "status": "completed"
+    },
+    {
+      "name": "实现会话管理",
+      "status": "completed"
+    },
+    {
+      "name": "实现角色检查",
+      "status": "completed"
+    },
+    {
+      "name": "实现权限检查",
+      "status": "completed"
+    },
+    {
+      "name": "编写单元测试",
+      "status": "pending"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "plog-rs/crates/auth/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 2 核心任务，认证服务核心功能已完成，待编写单元测试",
+  "meta": {
+    "phase": "phase2",
+    "estimated_weeks": 2,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": "rust-phase2-database-layer"
+  }
+}

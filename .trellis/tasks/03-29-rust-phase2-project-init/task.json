@@ -1,0 +1,63 @@
+{
+  "id": "rust-phase2-project-init",
+  "name": "rust-phase2-project-init",
+  "title": "Rust 项目初始化",
+  "description": "搭建 Rust 项目基础结构，包括 Cargo workspace、CI/CD、开发环境配置",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "rust",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": null,
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "创建根 Cargo.toml",
+      "status": "completed"
+    },
+    {
+      "name": "创建 core crate",
+      "status": "completed"
+    },
+    {
+      "name": "创建 auth crate",
+      "status": "completed"
+    },
+    {
+      "name": "创建 content crate",
+      "status": "completed"
+    },
+    {
+      "name": "创建 api crate",
+      "status": "completed"
+    },
+    {
+      "name": "配置 GitHub Actions",
+      "status": "completed"
+    },
+    {
+      "name": "编写开发环境文档",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "plog-rs/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 2 核心任务已完成",
+  "meta": {
+    "phase": "phase2",
+    "estimated_weeks": 1,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md"
+  }
+}

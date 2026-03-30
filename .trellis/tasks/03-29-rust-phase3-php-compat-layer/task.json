@@ -1,0 +1,62 @@
+{
+  "id": "rust-phase3-php-compat-layer",
+  "name": "rust-phase3-php-compat-layer",
+  "title": "PHP 兼容层框架",
+  "description": "建立 PHP 兼容层框架，让 PHP 只做兼容入口，真实业务规则在 Rust",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "php",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": "kilo",
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 3,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "设计目录结构",
+      "status": "completed"
+    },
+    {
+      "name": "实现 HTTP 客户端",
+      "status": "completed"
+    },
+    {
+      "name": "实现请求转发",
+      "status": "completed"
+    },
+    {
+      "name": "实现响应转换",
+      "status": "completed"
+    },
+    {
+      "name": "实现错误处理",
+      "status": "completed"
+    },
+    {
+      "name": "编写文档",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "compat/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 3 核心任务，PHP 兼容层框架已完成",
+  "meta": {
+    "phase": "phase3",
+    "estimated_weeks": 2,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md",
+    "depends_on": [
+      "rust-phase2-nginx-routing"
+    ]
+  }
+}

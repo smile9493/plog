@@ -1,0 +1,73 @@
+{
+  "id": "rust-phase1-api-contract",
+  "name": "rust-phase1-api-contract",
+  "title": "API 接口梳理与契约固定",
+  "description": "梳理现有 admin-api 的所有 API 端点，编写 OpenAPI 规范文档，定义版本管理策略",
+  "status": "completed",
+  "dev_type": "backend",
+  "scope": "api",
+  "priority": "P0",
+  "creator": "ai-agent",
+  "assignee": null,
+  "createdAt": "2026-03-29",
+  "completedAt": "2026-03-29",
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "current_phase": 4,
+  "next_action": [],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [
+    {
+      "name": "梳理认证相关 API",
+      "status": "completed"
+    },
+    {
+      "name": "梳理内容管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "梳理分类管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "梳理标签管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "梳理评论管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "梳理媒体管理 API",
+      "status": "completed"
+    },
+    {
+      "name": "编写 OpenAPI 规范文档",
+      "status": "completed"
+    },
+    {
+      "name": "定义版本管理策略",
+      "status": "completed"
+    },
+    {
+      "name": "建立 API 测试套件",
+      "status": "completed"
+    }
+  ],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "apps/admin-api/",
+    "docs/api/",
+    "tests/api/",
+    ".trellis/spec/plog-rust-migration/"
+  ],
+  "notes": "Phase 1 边界收敛核心任务已完成",
+  "meta": {
+    "phase": "phase1",
+    "estimated_weeks": 2,
+    "migration_doc": ".trellis/spec/plog-rust-migration/migration-plan.md"
+  }
+}

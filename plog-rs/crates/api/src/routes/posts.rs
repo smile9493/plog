@@ -22,6 +22,7 @@ pub fn routes() -> Router<AppState> {
 
 /// 查询参数
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct ListParams {
     pub page: Option<u64>,
     pub per_page: Option<u64>,

@@ -4,7 +4,7 @@ import type { User, UserListParams, UserListResponse } from '@/types/user'
 export const userApi = {
   // 获取用户列表
   getList(params: UserListParams) {
-    return request.get<UserListResponse>('/api/users', { params })
+    return request.get<UserListResponse>('/users', { params })
   },
 
   // 获取用户详情
@@ -14,7 +14,7 @@ export const userApi = {
 
   // 创建用户
   create(data: Partial<User> & { password?: string }) {
-    return request.post<User>('/api/users', data)
+    return request.post<User>('/users', data)
   },
 
   // 更新用户

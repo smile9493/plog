@@ -20,6 +20,7 @@ content/plugins/*
 
 content/templates/*
 !content/templates/.gitkeep
+!content/templates/zen/
 
 # ==================== 日志文件 ====================
 *.log
@@ -44,6 +45,10 @@ Desktop.ini
 
 # ==================== Docker ====================
 .docker/
+docker/.env
+
+# ==================== 配置敏感文件 ====================
+config/sync_config.json
 
 # ==================== AI工具目录 ====================
 .agents/

@@ -4,12 +4,12 @@ import type { Category, ApiResponse } from '@/types'
 export const categoryApi = {
   // 获取分类列表
   getList() {
-    return request.get<ApiResponse<Category[]>>('/api/categories')
+    return request.get<ApiResponse<Category[]>>('/categories')
   },
   
   // 获取所有分类(不分页)
   getAll() {
-    return request.get<ApiResponse<Category[]>>('/api/categories')
+    return request.get<ApiResponse<Category[]>>('/categories')
       .then(res => res.data || [])
   },
   
@@ -21,7 +21,7 @@ export const categoryApi = {
   
   // 创建分类
   create(data: Partial<Category>) {
-    return request.post<ApiResponse<Category>>('/api/categories', data)
+    return request.post<ApiResponse<Category>>('/categories', data)
       .then(res => res.data)
   },
   
@@ -38,6 +38,6 @@ export const categoryApi = {
   
   // 更新排序
   updateSort(data: { sid: number; sortorder: number }[]) {
-    return request.put<ApiResponse<void>>('/api/categories/sort', data)
+    return request.put<ApiResponse<void>>('/categories/sort', data)
   }
 }

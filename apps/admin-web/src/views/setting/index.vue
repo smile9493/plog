@@ -255,7 +255,6 @@ const handleSaveBasic = async () => {
         await new Promise(resolve => setTimeout(resolve, 500))
         ElMessage.success('保存成功')
       } catch (error) {
-        ElMessage.error('保存失败')
       } finally {
         saving.value = false
       }
@@ -271,7 +270,6 @@ const handleSaveSeo = async () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     ElMessage.success('保存成功')
   } catch (error) {
-    ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
@@ -285,7 +283,6 @@ const handleSaveEmail = async () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     ElMessage.success('保存成功')
   } catch (error) {
-    ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
@@ -299,7 +296,6 @@ const handleTestEmail = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     ElMessage.success('测试邮件已发送')
   } catch (error) {
-    ElMessage.error('发送失败')
   } finally {
     testing.value = false
   }
@@ -313,7 +309,6 @@ const handleSaveUpload = async () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     ElMessage.success('保存成功')
   } catch (error) {
-    ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
@@ -326,7 +321,6 @@ const handleClearCache = async () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     ElMessage.success('缓存已清除')
   } catch (error) {
-    ElMessage.error('清除失败')
   }
 }
 
@@ -337,7 +331,6 @@ const handleBackup = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     ElMessage.success('备份已开始，完成后将发送邮件通知')
   } catch (error) {
-    ElMessage.error('备份失败')
   }
 }
 

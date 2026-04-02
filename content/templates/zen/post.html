@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ post.title }} - {{ site.name }}</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">{{ site.name }}</a>
+      <nav class="nav">
+        <a href="/" class="nav-link">文章</a>
+        <a href="/categories" class="nav-link">分类</a>
+        <a href="/about" class="nav-link">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <article class="post">
+        <header class="post-header">
+          <time class="post-date">{{ format_date post.created_at }}</time>
+          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="post-meta">
+            {{#if post.category}}
+            <span class="post-category">{{ post.category.name }}</span>
+            {{/if}}
+            {{#each post.tags}}
+            <span class="post-tag">#{{ name }}</span>
+            {{/each}}
+          </div>
+        </header>
+
+        {{#if post.cover}}
+        <figure class="post-cover">
+          <img src="{{ post.cover }}" alt="{{ post.title }}">
+        </figure>
+        {{/if}}
+
+        <div class="post-content">
+          {{{ post.content }}}
+        </div>
+
+        <footer class="post-footer">
+          <div class="post-nav">
+            {{#if post.prev}}
+            <a href="{{ post.prev.url }}" class="nav-prev">← {{ post.prev.title }}</a>
+            {{/if}}
+            {{#if post.next}}
+            <a href="{{ post.next.url }}" class="nav-next">{{ post.next.title }} →</a>
+            {{/if}}
+          </div>
+        </footer>
+      </article>
+
+      <section class="comments">
+        <h3 class="comments-title">评论</h3>
+        <div class="comments-list">
+          {{#each comments}}
+          <div class="comment">
+            <div class="comment-header">
+              <span class="comment-author">{{ author }}</span>
+              <time class="comment-date">{{ format_date created_at }}</time>
+            </div>
+            <div class="comment-content">{{ content }}</div>
+          </div>
+          {{/each}}
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; {{ current_year }} {{ site.name }}. 保留所有权利。</p>
+    </div>
+  </footer>
+</body>
+</html>

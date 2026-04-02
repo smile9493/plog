@@ -179,7 +179,7 @@ const fetchPosts = async () => {
     postList.value = res.items
     total.value = res.pagination.total
   } catch (error) {
-    ElMessage.error('获取文章列表失败')
+    
   } finally {
     loading.value = false
   }

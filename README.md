@@ -1,112 +1,70 @@
 # Plog CMS
 
-> 基于纯 Rust 架构的现代化内容管理系统
-
-## 架构概览
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                            Nginx                                 │
-│                      (反向代理 + SSL)                             │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        ▼                   ▼                   ▼
-┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-│   /api/*     │   │  /admin-web  │   │   /uploads   │
-│  Rust API    │   │  Vue 3 SPA   │   │   静态资源    │
-│   (8080)     │   │   (5173)     │   │              │
-└──────┬───────┘   └──────────────┘   └──────────────┘
-       │
-       ▼
-┌──────────────┐
-│    MySQL     │
-└──────────────┘
-```
+> 基于 Rust 构建的现代化内容管理系统
 
 ## 技术栈
 
 | 层 | 技术 |
 |---|------|
-| 后端 | Rust (Axum + SeaORM + JWT + Argon2) |
+| 后端 | Rust (Axum + SeaORM + JWT) |
 | 前端 | Vue 3 + TypeScript + Element Plus |
 | 数据库 | MySQL 8.0 |
-| 服务器 | Nginx |
-| 容器 | Docker |
+| 部署 | Docker + Docker Compose |
 
 ## 目录结构
 
 ```
 mytheme/
-├── plog-rs/              # Rust 核心服务
+├── plog-rs/              # Rust 后端服务
 │   ├── crates/
-│   │   ├── contracts/    #   API 合约
-│   │   ├── core/         #   核心类型
-│   │   ├── auth/         #   认证 (JWT + Argon2)
-│   │   ├── content/      #   内容管理 (SeaORM)
-│   │   ├── settings/     #   设置管理
-│   │   ├── media/        #   媒体管理
-│   │   ├── audit/        #   审计日志
-│   │   ├── plugin/       #   插件 Runtime
-│   │   ├── theme/        #   主题 Runtime
-│   │   └── api/          #   API 服务
-│   ├── config/
-│   │   └── nginx/        #   Nginx 配置
-│   └── migrations/       #   数据库迁移
+│   │   ├── api/          #   API 路由
+│   │   ├── core/         #   核心模块
+│   │   ├── auth/         #   认证模块
+│   │   └── content/      #   内容管理
+│   └── config/           #   配置文件
 │
-├── apps/                 # 应用
-│   ├── admin-web/        #   管理后台 (Vue 3)
-│   ├── cli-rs/           #   命令行工具
-│   └── installer-rs/     #   安装器
+├── apps/
+│   ├── admin-web/        # 管理后台 (Vue 3)
+│   └── cli-rs/           # 命令行工具
 │
-├── content/              # 内容数据
-│   ├── templates/        #   主题模板
-│   ├── plugins/          #   插件
-│   └── uploadfile/       #   上传文件
+├── content/
+│   └── templates/zen/    # 前台主题
 │
 ├── docker/               # Docker 配置
-├── docs/                 # 文档
-└── .trellis/             # 项目管理
+└── docs/                 # 文档
 ```
 
 ## 快速开始
 
-### 1. 构建 Rust 服务
+### Docker 部署（推荐）
 
+```bash
+cd docker
+docker compose up -d
+```
+
+访问：
+- 前台展示：http://localhost:8082
+- 管理后台：http://localhost:8081
+- API 服务：http://localhost:8080
+
+### 本地开发
+
+**后端**
 ```bash
 cd plog-rs
 cargo build --release
+./target/release/plog-api
 ```
 
-### 2. 配置数据库
-
-```bash
-cp plog-rs/config/default.toml plog-rs/config/local.toml
-# 编辑 local.toml 配置数据库连接
-```
-
-### 3. 运行迁移
-
-```bash
-cd plog-rs
-cargo run --bin migrate
-```
-
-### 4. 启动服务
-
-```bash
-./plog-rs/target/release/plog-api
-```
-
-### 5. 启动前端
-
+**前端**
 ```bash
 cd apps/admin-web
 npm install
 npm run dev
 ```
 
-## API 文档
+## API 端点
 
 | 方法 | 端点 | 说明 |
 |------|------|------|
@@ -116,25 +74,6 @@ npm run dev
 | GET | `/api/categories` | 分类列表 |
 | GET | `/api/tags` | 标签列表 |
 | GET | `/api/comments` | 评论列表 |
-| GET | `/api/settings` | 系统设置 |
-
-详见: [docs/API.md](docs/API.md)
-
-## 测试
-
-```bash
-cd plog-rs
-cargo test
-```
-
-**测试覆盖**: 57 个测试全部通过 ✅
-
-## Docker 部署
-
-```bash
-cd docker
-docker compose up -d
-```
 
 ## License
 

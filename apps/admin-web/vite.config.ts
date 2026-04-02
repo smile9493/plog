@@ -15,7 +15,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:8080',
         changeOrigin: true
       }
     }
@@ -23,14 +23,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    // 禁用代码分割，打包成单个文件
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          'element-plus': ['element-plus'],
+          'vue-vendor': ['vue', 'vue-router', 'pinia']
+        }
       }
     },
-    chunkSizeWarningLimit: 2000,
-    // 禁用模块预加载
-    modulePreload: false
+    chunkSizeWarningLimit: 500
   }
 })

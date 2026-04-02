@@ -51,8 +51,7 @@ service.interceptors.response.use(
       return data.data
     }
     
-    // 其他状态码都当作错误处理
-    ElMessage.error(data.message || data.error?.message || '请求失败')
+    // 其他状态码静默处理
     return Promise.reject(new Error(data.message || data.error?.message || '请求失败'))
   },
   (error: AxiosError) => {
@@ -71,22 +70,13 @@ service.interceptors.response.use(
           // 跳转到登录页
           window.location.href = '/login'
           break
-        case 403:
-          ElMessage.error('没有权限访问')
-          break
-        case 404:
-          ElMessage.error('请求的资源不存在')
-          break
-        case 500:
-          ElMessage.error('服务器错误')
-          break
         default:
-          ElMessage.error(data?.message || '请求失败')
+          break
       }
     } else if (error.request) {
-      ElMessage.error('网络错误，请检查网络连接')
+      // 网络错误静默处理
     } else {
-      ElMessage.error('请求配置错误')
+      // 请求配置错误静默处理
     }
     
     return Promise.reject(error)

@@ -39,15 +39,17 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: plog-api
     environment:
-      DATABASE_URL: mysql://${MYSQL_USER:-plog}:${MYSQL_PASSWORD:-plog123}@mysql:3306/${MYSQL_DATABASE:-plog}
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      PLOG__DATABASE__URL: mysql://${MYSQL_USER:-plog}:${MYSQL_PASSWORD:-plog123}@mysql:3306/${MYSQL_DATABASE:-plog}
+      PLOG__AUTH__JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      PLOG__SERVER__HOST: 0.0.0.0
+      PLOG__SERVER__PORT: 8080
       RUST_LOG: ${RUST_LOG:-info}
-      SERVER_HOST: 0.0.0.0
-      SERVER_PORT: 8080
       HTTP_PROXY: ""
       HTTPS_PROXY: ""
       http_proxy: ""
       https_proxy: ""
+      NO_PROXY: "localhost,127.0.0.1,mysql"
+      no_proxy: "localhost,127.0.0.1,mysql"
     ports:
       - "8080:8080"
     depends_on:
@@ -59,7 +61,7 @@ services:
       - api_themes:/app/content/themes
       - api_cache:/app/content/cache
       - api_logs:/app/content/logs
-      # 挂载本地构建的二进制文件
+      # 挂载本地构建的二进制文件（需在WSL中编译）
       - ../plog-rs/target/release/plog-api:/app/plog-api:ro
     restart: unless-stopped
     networks:

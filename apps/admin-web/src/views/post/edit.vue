@@ -185,7 +185,7 @@ const fetchPost = async () => {
     form.tag_ids = post.tags?.map(tag => tag.id) || []
     form.status = post.status as 'draft' | 'published'
   } catch (error) {
-    ElMessage.error('获取文章详情失败')
+    
     router.push('/post/list')
   } finally {
     loading.value = false
@@ -229,7 +229,6 @@ const handleSaveDraft = async () => {
         }
         ElMessage.success('保存成功')
       } catch (error) {
-        ElMessage.error('保存失败')
       } finally {
         saving.value = false
       }
@@ -254,7 +253,6 @@ const handlePublish = async () => {
         ElMessage.success(isEdit.value ? '更新成功' : '发布成功')
         router.push('/post/list')
       } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '发布失败')
       } finally {
         publishing.value = false
       }
@@ -277,10 +275,8 @@ const handleUploadImg = async (files: File[], callback: (urls: string[]) => void
     if (result.code === 200 || result.code === 0) {
       callback([result.data.url])
     } else {
-      ElMessage.error('图片上传失败')
     }
   } catch (error) {
-    ElMessage.error('图片上传失败')
   }
 }
 
@@ -290,7 +286,6 @@ const handleCoverSuccess: UploadProps['onSuccess'] = (response) => {
     form.cover = response.data.url
     ElMessage.success('封面上传成功')
   } else {
-    ElMessage.error('封面上传失败')
   }
 }
 
@@ -300,11 +295,9 @@ const beforeCoverUpload: UploadProps['beforeUpload'] = (file) => {
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('图片大小不能超过 2MB!')
     return false
   }
   return true

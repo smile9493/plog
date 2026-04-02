@@ -222,7 +222,7 @@ const fetchMedia = async () => {
     mediaList.value = res.items
     total.value = res.total
   } catch (error) {
-    ElMessage.error('获取媒体列表失败')
+    
   } finally {
     loading.value = false
   }
@@ -234,11 +234,9 @@ const beforeUpload = (file: File) => {
   const isLt5M = file.size / 1024 / 1024 < 5
 
   if (!isImage) {
-    ElMessage.error('只能上传图片文件!')
     return false
   }
   if (!isLt5M) {
-    ElMessage.error('图片大小不能超过 5MB!')
     return false
   }
   return true
@@ -250,13 +248,11 @@ const handleUploadSuccess = (response: any) => {
     ElMessage.success('上传成功')
     fetchMedia()
   } else {
-    ElMessage.error(response.message || '上传失败')
   }
 }
 
 // 上传失败
 const handleUploadError = () => {
-  ElMessage.error('上传失败')
 }
 
 // 选择媒体

@@ -177,7 +177,7 @@ const fetchTags = async () => {
     tagList.value = res.items
     total.value = res.total
   } catch (error) {
-    ElMessage.error('获取标签列表失败')
+    
   } finally {
     loading.value = false
   }
@@ -219,7 +219,6 @@ const handleSubmit = async () => {
         dialogVisible.value = false
         fetchTags()
       } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
       } finally {
         submitting.value = false
       }
@@ -253,7 +252,6 @@ const handleMerge = (tag: Tag) => {
 // 提交合并
 const handleMergeSubmit = async () => {
   if (!mergeSource.value || !mergeTargetId.value) {
-    ElMessage.warning('请选择目标标签')
     return
   }
 
@@ -264,7 +262,6 @@ const handleMergeSubmit = async () => {
     mergeDialogVisible.value = false
     fetchTags()
   } catch (error) {
-    ElMessage.error('合并失败')
   } finally {
     merging.value = false
   }

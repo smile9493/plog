@@ -172,7 +172,7 @@ const fetchComments = async () => {
     commentList.value = res.data?.items || []
     pagination.total = res.data?.pagination?.total || 0
   } catch (error) {
-    ElMessage.error('获取评论列表失败')
+    
   } finally {
     loading.value = false
   }
@@ -212,7 +212,6 @@ const handleApprove = async (id: number) => {
     ElMessage.success('已通过')
     fetchComments()
   } catch (error) {
-    ElMessage.error('操作失败')
   }
 }
 
@@ -223,7 +222,6 @@ const handleReject = async (id: number) => {
     ElMessage.success('已拒绝')
     fetchComments()
   } catch (error) {
-    ElMessage.error('操作失败')
   }
 }
 
@@ -234,7 +232,6 @@ const handleDelete = async (id: number) => {
     ElMessage.success('删除成功')
     fetchComments()
   } catch (error) {
-    ElMessage.error('删除失败')
   }
 }
 
@@ -252,7 +249,6 @@ const handleBatchApprove = async () => {
     fetchComments()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('操作失败')
     }
   }
 }
@@ -271,7 +267,6 @@ const handleBatchDelete = async () => {
     fetchComments()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('操作失败')
     }
   }
 }

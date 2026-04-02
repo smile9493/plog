@@ -145,7 +145,7 @@ const fetchCategories = async () => {
     categoryList.value = res.items
     total.value = res.total
   } catch (error) {
-    ElMessage.error('获取分类列表失败')
+    
   } finally {
     loading.value = false
   }
@@ -189,7 +189,6 @@ const handleSubmit = async () => {
         dialogVisible.value = false
         fetchCategories()
       } catch (error) {
-        ElMessage.error(isEdit.value ? '更新失败' : '创建失败')
       } finally {
         submitting.value = false
       }

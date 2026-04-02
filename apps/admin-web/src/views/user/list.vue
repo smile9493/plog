@@ -224,7 +224,7 @@ const fetchUserList = async () => {
     userList.value = res.data.items
     pagination.total = res.data.pagination.total
   } catch (error) {
-    ElMessage.error('获取用户列表失败')
+    
   } finally {
     loading.value = false
   }
@@ -302,7 +302,6 @@ const handleSubmit = async () => {
       dialogVisible.value = false
       fetchUserList()
     } catch (error) {
-      ElMessage.error(formData.uid ? '更新失败' : '创建失败')
     } finally {
       submitting.value = false
     }
@@ -316,7 +315,6 @@ const handleDelete = async (row: User) => {
     ElMessage.success('删除成功')
     fetchUserList()
   } catch (error) {
-    ElMessage.error('删除失败')
   }
 }
 
@@ -339,7 +337,6 @@ const handleResetPassword = async (row: User) => {
     ElMessage.success('密码重置成功')
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('密码重置失败')
     }
   }
 }

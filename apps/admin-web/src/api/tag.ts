@@ -4,18 +4,18 @@ import type { Tag, ApiResponse } from '@/types'
 export const tagApi = {
   // 获取标签列表
   getList() {
-    return request.get<ApiResponse<Tag[]>>('/api/tags')
+    return request.get<ApiResponse<Tag[]>>('/tags')
   },
   
   // 获取所有标签(不分页)
   getAll() {
-    return request.get<ApiResponse<Tag[]>>('/api/tags')
+    return request.get<ApiResponse<Tag[]>>('/tags')
       .then(res => res.data || [])
   },
   
   // 获取热门标签
   getPopular(limit: number = 20) {
-    return request.get<ApiResponse<Tag[]>>('/api/tags', { 
+    return request.get<ApiResponse<Tag[]>>('/tags', { 
       params: { popular: true, limit } 
     }).then(res => res.data || [])
   },
@@ -28,7 +28,7 @@ export const tagApi = {
   
   // 创建标签
   create(data: { tagname: string }) {
-    return request.post<ApiResponse<Tag>>('/api/tags', data)
+    return request.post<ApiResponse<Tag>>('/tags', data)
       .then(res => res.data)
   },
   

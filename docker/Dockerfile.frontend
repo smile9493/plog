@@ -7,8 +7,8 @@
 # 生产阶段
 FROM nginx:alpine
 
-# 复制主题模板
-COPY content/templates/ /usr/share/nginx/html/
+# 复制主题模板到根目录
+COPY content/templates/zen/ /usr/share/nginx/html/
 
 # 复制静态资源
 COPY content/uploadfile/ /usr/share/nginx/html/uploads/

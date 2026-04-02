@@ -22,7 +22,7 @@ export interface CommentListResponse {
 export const commentApi = {
   // 获取评论列表
   getList(params?: CommentListParams) {
-    return request.get<ApiResponse<CommentListResponse>>('/api/comments', { params })
+    return request.get<ApiResponse<CommentListResponse>>('/comments', { params })
   },
 
   // 获取评论详情
@@ -32,7 +32,7 @@ export const commentApi = {
 
   // 创建评论
   create(data: Partial<Comment>) {
-    return request.post<ApiResponse<Comment>>('/api/comments', data)
+    return request.post<ApiResponse<Comment>>('/comments', data)
   },
 
   // 更新评论
@@ -57,11 +57,11 @@ export const commentApi = {
 
   // 批量通过
   batchApprove(ids: number[]) {
-    return request.post<ApiResponse<void>>('/api/comments/batch-approve', { ids })
+    return request.post<ApiResponse<void>>('/comments/batch-approve', { ids })
   },
 
   // 批量删除
   batchDelete(ids: number[]) {
-    return request.post<ApiResponse<void>>('/api/comments/batch-delete', { ids })
+    return request.post<ApiResponse<void>>('/comments/batch-delete', { ids })
   }
 }

@@ -97,13 +97,79 @@ impl AuthService {
         })
     }
 
-    /// 刷新 Token
-    pub async fn refresh_token(&self, token: &str) -> PlogResult<String> {
-        self.jwt.refresh_token(token)
+    /// 刷新 Token (通过用户ID)
+    pub async fn refresh_token_by_user_id(&self, user_id: i32) -> PlogResult<String> {
+        let user = user::Entity::find_by_id(user_id)
+            .one(&*self.db)
+            .await
+            .map_err(|e| PlogError::DatabaseError(format!("Database error: {}", e)))?;
+
+        let user = user.ok_or_else(|| PlogError::NotFoundError("User not found".into()))?;
+        
+        self.jwt.generate_token(user.uid, &user.username, &user.role)
     }
 
     /// 验证 Token
     pub async fn validate_token(&self, token: &str) -> PlogResult<crate::Claims> {
         self.jwt.validate_token(token)
+    }
+
+    /// 修改密码
+    pub async fn change_password(&self, user_id: i32, old_password: &str, new_password: &str) -> PlogResult<()> {
+        let user = user::Entity::find_by_id(user_id)
+            .one(&*self.db)
+            .await
+            .map_err(|e| PlogError::DatabaseError(format!("Database error: {}", e)))?;
+
+        let user = user.ok_or_else(|| PlogError::NotFoundError("User not found".into()))?;
+
+        // 验证旧密码
+        let is_valid = PasswordHasher::verify(old_password, &user.password)?;
+        if !is_valid {
+            return Err(PlogError::AuthError("Invalid old password".into()));
+        }
+
+        // 哈希新密码
+        let hashed_password = PasswordHasher::hash(new_password)?;
+
+        // 更新密码
+        let mut user_active: user::ActiveModel = user.into();
+        user_active.password = Set(hashed_password);
+        user_active.update(&*self.db)
+            .await
+            .map_err(|e| PlogError::DatabaseError(format!("Database error: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// 更新用户资料
+    pub async fn update_profile(&self, user_id: i32, data: serde_json::Value) -> PlogResult<UserInfo> {
+        let user = user::Entity::find_by_id(user_id)
+            .one(&*self.db)
+            .await
+            .map_err(|e| PlogError::DatabaseError(format!("Database error: {}", e)))?;
+
+        let user = user.ok_or_else(|| PlogError::NotFoundError("User not found".into()))?;
+
+        let mut user_active: user::ActiveModel = user.into();
+
+        if let Some(nickname) = data.get("nickname").and_then(|v| v.as_str()) {
+            user_active.nickname = Set(nickname.to_string());
+        }
+        if let Some(email) = data.get("email").and_then(|v| v.as_str()) {
+            user_active.email = Set(Some(email.to_string()));
+        }
+
+        let user = user_active.update(&*self.db)
+            .await
+            .map_err(|e| PlogError::DatabaseError(format!("Database error: {}", e)))?;
+
+        Ok(UserInfo {
+            id: user.uid,
+            username: user.username,
+            nickname: user.nickname,
+            role: user.role,
+            email: user.email,
+        })
     }
 }

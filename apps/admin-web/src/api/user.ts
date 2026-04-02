@@ -9,7 +9,7 @@ export const userApi = {
 
   // 获取用户详情
   getById(id: number) {
-    return request.get<User>(`/api/users/${id}`)
+    return request.get<User>(`/users/${id}`)
   },
 
   // 创建用户
@@ -19,16 +19,16 @@ export const userApi = {
 
   // 更新用户
   update(id: number, data: Partial<User>) {
-    return request.put<User>(`/api/users/${id}`, data)
+    return request.put<User>(`/users/${id}`, data)
   },
 
   // 删除用户
   delete(id: number) {
-    return request.delete(`/api/users/${id}`)
+    return request.delete(`/users/${id}`)
   },
 
   // 重置密码
   resetPassword(id: number, password: string) {
-    return request.post(`/api/users/${id}/reset-password`, { password })
+    return request.post(`/users/${id}/reset-password`, { password })
   }
 }

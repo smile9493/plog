@@ -27,7 +27,7 @@ export const commentApi = {
 
   // 获取评论详情
   getDetail(id: number) {
-    return request.get<ApiResponse<Comment>>(`/api/comments/${id}`)
+    return request.get<ApiResponse<Comment>>(`/comments/${id}`)
   },
 
   // 创建评论
@@ -37,22 +37,22 @@ export const commentApi = {
 
   // 更新评论
   update(id: number, data: Partial<Comment>) {
-    return request.put<ApiResponse<Comment>>(`/api/comments/${id}`, data)
+    return request.put<ApiResponse<Comment>>(`/comments/${id}`, data)
   },
 
   // 删除评论
   delete(id: number) {
-    return request.delete<ApiResponse<void>>(`/api/comments/${id}`)
+    return request.delete<ApiResponse<void>>(`/comments/${id}`)
   },
 
   // 审核通过
   approve(id: number) {
-    return request.post<ApiResponse<void>>(`/api/comments/${id}/approve`)
+    return request.post<ApiResponse<void>>(`/comments/${id}/approve`)
   },
 
   // 拒绝评论
   reject(id: number) {
-    return request.put<ApiResponse<void>>(`/api/comments/${id}`, { hide: 'spam' })
+    return request.put<ApiResponse<void>>(`/comments/${id}`, { hide: 'spam' })
   },
 
   // 批量通过

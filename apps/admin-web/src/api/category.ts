@@ -15,7 +15,7 @@ export const categoryApi = {
   
   // 获取分类详情
   getDetail(id: number) {
-    return request.get<ApiResponse<Category>>(`/api/categories/${id}`)
+    return request.get<ApiResponse<Category>>(`/categories/${id}`)
       .then(res => res.data)
   },
   
@@ -27,13 +27,13 @@ export const categoryApi = {
   
   // 更新分类
   update(id: number, data: Partial<Category>) {
-    return request.put<ApiResponse<Category>>(`/api/categories/${id}`, data)
+    return request.put<ApiResponse<Category>>(`/categories/${id}`, data)
       .then(res => res.data)
   },
   
   // 删除分类
   delete(id: number) {
-    return request.delete<ApiResponse<void>>(`/api/categories/${id}`)
+    return request.delete<ApiResponse<void>>(`/categories/${id}`)
   },
   
   // 更新排序

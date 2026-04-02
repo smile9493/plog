@@ -22,7 +22,7 @@ export const tagApi = {
   
   // 获取标签详情
   getDetail(id: number) {
-    return request.get<ApiResponse<Tag>>(`/api/tags/${id}`)
+    return request.get<ApiResponse<Tag>>(`/tags/${id}`)
       .then(res => res.data)
   },
   
@@ -34,12 +34,12 @@ export const tagApi = {
   
   // 更新标签
   update(id: number, data: { tagname: string }) {
-    return request.put<ApiResponse<Tag>>(`/api/tags/${id}`, data)
+    return request.put<ApiResponse<Tag>>(`/tags/${id}`, data)
       .then(res => res.data)
   },
   
   // 删除标签
   delete(id: number) {
-    return request.delete<ApiResponse<void>>(`/api/tags/${id}`)
+    return request.delete<ApiResponse<void>>(`/tags/${id}`)
   }
 }

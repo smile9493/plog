@@ -1,0 +1,25 @@
+# Docker ignore
+**/target/
+**/node_modules/
+**/.git/
+**/.trellis/
+**/.kilo/
+**/.opencode/
+**/.agents/
+**/.claude/
+**/compat/
+**/include/
+**/admin/
+**/vendor/
+**/emlog_data/
+**/plog-rs/target/
+# 不排除 plog-rs/config - 需要用于Docker构建
+# **/plog-rs/config/
+# 不排除 docker/nginx*.conf - 需要用于构建
+# docker/
+docs/
+tests/
+*.log
+*.tmp
+*.md
+*.bak

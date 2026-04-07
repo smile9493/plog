@@ -69,7 +69,7 @@ where
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let auth_state = AuthState::from_ref(state);
 
-        let token = extract_token_from_header(parts)?;
+        let token = extract_token(parts)?;
         let claims = auth_state
             .jwt
             .validate_token(&token)
@@ -79,20 +79,30 @@ where
     }
 }
 
-/// 从请求头提取 Token
-fn extract_token_from_header(parts: &Parts) -> Result<String, AuthError> {
-    let header = parts
-        .headers
-        .get(AUTHORIZATION)
-        .ok_or(AuthError::MissingToken)?
-        .to_str()
-        .map_err(|_| AuthError::InvalidToken)?;
-
-    if !header.starts_with("Bearer ") {
-        return Err(AuthError::InvalidToken);
+/// 从请求提取 Token（支持 Bearer header 和 Cookie）
+fn extract_token(parts: &Parts) -> Result<String, AuthError> {
+    // 优先从 Authorization header 提取
+    if let Some(header) = parts.headers.get(AUTHORIZATION) {
+        if let Ok(header_str) = header.to_str() {
+            if header_str.starts_with("Bearer ") {
+                return Ok(header_str[7..].to_string());
+            }
+        }
     }
 
-    Ok(header[7..].to_string())
+    // 从 Cookie 提取
+    if let Some(cookie_header) = parts.headers.get(axum::http::header::COOKIE) {
+        if let Ok(cookie_str) = cookie_header.to_str() {
+            for cookie in cookie_str.split(';') {
+                let cookie = cookie.trim();
+                if cookie.starts_with("token=") {
+                    return Ok(cookie[6..].to_string());
+                }
+            }
+        }
+    }
+
+    Err(AuthError::MissingToken)
 }
 
 /// 认证中间件
@@ -103,7 +113,7 @@ pub async fn auth_middleware(
 ) -> Response {
     let (mut parts, body) = request.into_parts();
 
-    let token = match extract_token_from_header(&parts) {
+    let token = match extract_token(&parts) {
         Ok(token) => token,
         Err(err) => return err.into_response(),
     };

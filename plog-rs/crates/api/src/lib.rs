@@ -7,11 +7,14 @@ mod routes;
 use axum::{routing::get, Router, Json, middleware, http::Request, response::Response};
 use std::sync::Arc;
 use std::time::Duration;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{CorsLayer, Any, AllowOrigin};
 use tower_http::compression::CompressionLayer;
+use tower_http::limit::RequestBodyLimitLayer;
+use tower_governor::{GovernorLayer, key_extractor::SmartIpKeyExtractor, governor::GovernorConfigBuilder};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use axum::extract::FromRef;
 use sea_orm::{Database, ConnectOptions};
+use plog_migrations::MigratorTrait;
 
 /// 应用状态
 #[derive(Clone)]
@@ -99,11 +102,37 @@ pub async fn run() -> anyhow::Result<()> {
         config.database.min_connections
     );
 
+    // 运行数据库迁移
+    tracing::info!("Running database migrations...");
+    plog_migrations::Migrator::up(&db, None).await?;
+    tracing::info!("Database migrations completed");
+
     // 创建 JWT 服务
     let jwt = Arc::new(plog_auth::JwtService::new(
         &config.auth.jwt_secret,
         config.auth.jwt_expiration,
     ));
+
+    // 创建 CORS 层（白名单模式）
+    let cors_origins: Vec<_> = config.cors.allowed_origins.iter()
+        .map(|o| o.parse().expect("Invalid CORS origin"))
+        .collect();
+    let cors = CorsLayer::new()
+        .allow_methods(Any)
+        .allow_headers(Any)
+        .allow_origin(AllowOrigin::list(cors_origins));
+
+    // 创建速率限制层（每 IP 每分钟 60 请求）
+    let rate_limiter = GovernorLayer {
+        config: std::sync::Arc::new(
+            GovernorConfigBuilder::default()
+                .per_second(1)
+                .burst_size(60)
+                .key_extractor(SmartIpKeyExtractor)
+                .finish()
+                .expect("Failed to build rate limiter config"),
+        ),
+    };
 
     // 创建应用状态
     let state = AppState { db, jwt: jwt.clone() };
@@ -119,7 +148,9 @@ pub async fn run() -> anyhow::Result<()> {
         .merge(routes::comments::routes())
         .layer(middleware::from_fn(request_id_middleware))
         .layer(CompressionLayer::new())
-        .layer(CorsLayer::permissive())
+        .layer(cors)
+        .layer(rate_limiter)
+        .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024))
         .with_state(state);
 
     // 启动服务器

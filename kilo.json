@@ -1,0 +1,11 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "permission": {
+    "edit": {
+      "plog-rs/**": "allow",
+      ".kilo/plans/*.md": "allow",
+      ".trellis/**": "allow",
+      "AGENTS.md": "allow"
+    }
+  }
+}

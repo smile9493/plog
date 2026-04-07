@@ -1,29 +1,50 @@
 # =============================================================================
-# Rust API Dockerfile - 生产环境
-# 
-# 使用本地预构建的二进制文件
+# Rust API Dockerfile - 生产环境 (Multi-stage build)
 # =============================================================================
 
-# 使用 debian:bookworm-slim 作为运行环境
+# ---- Builder Stage ----
+FROM rust:1.75-slim AS builder
+
+WORKDIR /app
+
+# 安装构建依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖清单
+COPY plog-rs/Cargo.toml plog-rs/Cargo.lock ./
+COPY plog-rs/crates ./crates
+COPY plog-rs/migrations ./migrations
+
+# 预编译依赖（利用 Docker 层缓存）
+RUN cargo fetch
+RUN cargo build --release --no-default-features
+# 清理源码但保留编译产物
+RUN rm -rf crates migrations Cargo.toml Cargo.lock
+
+# 复制源码并编译
+COPY plog-rs/Cargo.toml plog-rs/Cargo.lock ./
+COPY plog-rs/crates ./crates
+COPY plog-rs/migrations ./migrations
+RUN cargo build --release --bin plog-api
+RUN strip target/release/plog-api
+
+# ---- Runtime Stage ----
 FROM debian:bookworm-slim
 
 WORKDIR /app
 
-# 清除代理环境变量
-ENV HTTP_PROXY=
-ENV HTTPS_PROXY=
-ENV http_proxy=
-ENV https_proxy=
-ENV ALL_PROXY=
-ENV all_proxy=
-
-# 安装运行时依赖 (禁用代理)
-RUN unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy && \
-    apt-get update && apt-get install -y --no-install-recommends \
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
     ca-certificates \
     wget \
     && rm -rf /var/lib/apt/lists/*
+
+# 从 builder 阶段复制二进制文件
+COPY --from=builder /app/target/release/plog-api /app/plog-api
 
 # 复制配置文件
 COPY plog-rs/config/ /app/config/
@@ -37,9 +58,6 @@ RUN mkdir -p /app/content/uploads \
 
 # 复制内容目录
 COPY content/ /app/content/
-
-# 二进制文件通过 docker-compose.yml 挂载提供
-# 不在这里 COPY
 
 # 暴露端口
 EXPOSE 8080

@@ -28,6 +28,7 @@ path = "src/main.rs"
 
 [dependencies]
 plog-api = { path = "crates/api" }
+plog-auth = { path = "crates/auth" }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 
@@ -36,7 +37,7 @@ anyhow = { workspace = true }
 axum = { version = "0.7", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "compression-deflate", "compression-zstd"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "compression-deflate", "compression-zstd", "limit"] }
 
 # 数据库
 sea-orm = { version = "1.0", features = ["sqlx-mysql", "runtime-tokio-rustls", "macros"] }
@@ -66,6 +67,12 @@ chrono = { version = "0.4", features = ["serde"] }
 
 # UUID
 uuid = { version = "1", features = ["v4", "serde"] }
+
+# 验证
+validator = { version = "0.18", features = ["derive"] }
+
+# 速率限制
+tower_governor = "0.4"
 
 # HTTP 客户端
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }

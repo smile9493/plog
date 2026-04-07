@@ -1,16 +1,17 @@
 //! 评论路由
 
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, Query, State, ConnectInfo},
     routing::{get, post},
     Router, Json,
 };
 use serde::Deserialize;
 use std::sync::Arc;
+use std::net::SocketAddr;
 
 use crate::AppState;
 use plog_auth::AuthUser;
-use plog_core::types::ApiResponse;
+use plog_contracts::ApiResponse;
 use plog_content::{repository::CommentRepository, entities::comment};
 
 /// 创建评论路由
@@ -101,6 +102,7 @@ async fn get_comment(
 async fn create_comment(
     State(state): State<AppState>,
     _user: AuthUser,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Json(payload): Json<CreateCommentRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     let repo = CommentRepository::new(Arc::new(state.db));
@@ -115,6 +117,7 @@ async fn create_comment(
     }
 
     let now = chrono::Utc::now().timestamp();
+    let client_ip = addr.ip().to_string();
     let new_comment = comment::ActiveModel {
         gid: sea_orm::Set(payload.gid),
         pid: sea_orm::Set(payload.pid.unwrap_or(0)),
@@ -122,7 +125,7 @@ async fn create_comment(
         poster: sea_orm::Set(payload.poster),
         email: sea_orm::Set(payload.email.unwrap_or_default()),
         url: sea_orm::Set(payload.url.unwrap_or_default()),
-        ip: sea_orm::Set("0.0.0.0".to_string()),
+        ip: sea_orm::Set(client_ip),
         date: sea_orm::Set(now),
         hide: sea_orm::Set("y".to_string()), // 默认待审核
         ..Default::default()

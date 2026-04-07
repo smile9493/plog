@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use crate::AppState;
 use plog_auth::AuthUser;
-use plog_core::types::ApiResponse;
+use plog_contracts::ApiResponse;
 use plog_content::{repository::CategoryRepository, entities::category};
 
 /// 创建分类路由

@@ -68,7 +68,7 @@ impl AuthService {
 
         Ok(LoginResponse {
             token,
-            expires_in: 3600, // 1 hour
+            expires_in: self.jwt.expiration(),
             user: UserInfo {
                 id: user.uid,
                 username: user.username,

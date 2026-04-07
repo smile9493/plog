@@ -47,7 +47,7 @@ impl CommentRepository {
         per_page: u64,
     ) -> Result<(Vec<Model>, u64), DbErr> {
         let paginator = Entity::find()
-            .filter(Column::Hide.eq("n"))
+            .filter(Column::Hide.eq("y"))
             .order_by_desc(Column::Date)
             .paginate(&*self.db, per_page);
 
@@ -83,13 +83,13 @@ impl CommentRepository {
         }
     }
 
-    /// 审核评论
+    /// 审核评论（通过审核，设置为不隐藏）
     pub async fn approve(&self, id: i32) -> Result<bool, DbErr> {
         let comment: Option<Model> = Entity::find_by_id(id).one(&*self.db).await?;
 
         if let Some(model) = comment {
             let mut active: ActiveModel = model.into();
-            active.hide = Set("y".to_string());
+            active.hide = Set("n".to_string());
             active.update(&*self.db).await?;
             Ok(true)
         } else {

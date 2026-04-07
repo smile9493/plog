@@ -1,6 +1,7 @@
 //! 认证路由
 
-use axum::{routing::post, Router, Json};
+use axum::{routing::post, Router, Json, response::IntoResponse, http::{header, HeaderValue, StatusCode}};
+use axum::response::Response;
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -31,11 +32,24 @@ pub fn routes() -> Router<AppState> {
         .route("/api/auth/profile", axum::routing::put(update_profile))
 }
 
+/// 创建 httpOnly cookie
+fn create_token_cookie(token: &str, max_age: i64) -> HeaderValue {
+    HeaderValue::from_str(&format!(
+        "token={}; HttpOnly; Path=/; Max-Age={}; SameSite=Strict",
+        token, max_age
+    )).unwrap_or_else(|_| HeaderValue::from_static(""))
+}
+
+/// 清除 token cookie
+fn clear_token_cookie() -> HeaderValue {
+    HeaderValue::from_static("token=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict")
+}
+
 /// 登录处理
 async fn login(
     state: axum::extract::State<AppState>,
     Json(payload): Json<LoginRequest>,
-) -> Json<serde_json::Value> {
+) -> Response {
     let auth_service = plog_auth::AuthService::new(
         Arc::new(state.db.clone()),
         state.jwt.clone(),
@@ -46,29 +60,43 @@ async fn login(
         password: payload.password,
     }).await {
         Ok(response) => {
-            Json(serde_json::json!({
+            let token = response.token.clone();
+            let expires_in = response.expires_in;
+            let body = Json(serde_json::json!({
                 "success": true,
-                "data": response
-            }))
+                "data": {
+                    "user": response.user,
+                    "expires_in": expires_in
+                }
+            }));
+            let mut resp = (StatusCode::OK, body).into_response();
+            resp.headers_mut().insert(header::SET_COOKIE, create_token_cookie(&token, expires_in));
+            resp
         }
         Err(e) => {
-            Json(serde_json::json!({
-                "success": false,
-                "error": {
-                    "code": e.error_code(),
-                    "message": e.to_string()
-                }
-            }))
+            (
+                StatusCode::UNAUTHORIZED,
+                Json(serde_json::json!({
+                    "success": false,
+                    "error": {
+                        "code": e.error_code(),
+                        "message": e.to_string()
+                    }
+                }))
+            ).into_response()
         }
     }
 }
 
 /// 登出处理
-async fn logout() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
+async fn logout() -> Response {
+    let body = Json(serde_json::json!({
         "success": true,
         "message": "Logged out successfully"
-    }))
+    }));
+    let mut resp = (StatusCode::OK, body).into_response();
+    resp.headers_mut().insert(header::SET_COOKIE, clear_token_cookie());
+    resp
 }
 
 /// 获取当前用户信息

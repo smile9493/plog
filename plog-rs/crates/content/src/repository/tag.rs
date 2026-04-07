@@ -79,18 +79,14 @@ impl TagRepository {
         Ok(result.rows_affected > 0)
     }
 
-    /// 增加使用次数
+    /// 增加使用次数（原子操作）
     pub async fn increment_usage(&self, id: i32) -> Result<bool, DbErr> {
-        let tag: Option<Model> = Entity::find_by_id(id).one(&*self.db).await?;
-
-        if let Some(model) = tag {
-            let mut active: ActiveModel = model.into();
-            active.usenum = Set(active.usenum.unwrap() + 1);
-            active.update(&*self.db).await?;
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+        let result = Entity::update_many()
+            .col_expr(Column::Usenum, sea_orm::prelude::Expr::col(Column::Usenum).add(1))
+            .filter(Column::Tid.eq(id))
+            .exec(&*self.db)
+            .await?;
+        Ok(result.rows_affected > 0)
     }
 
     /// 获取标签总数

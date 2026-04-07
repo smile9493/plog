@@ -20,8 +20,9 @@ service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     NProgress.start()
     
-    // 从 localStorage 获取 token
-    const token = localStorage.getItem('token')
+    // 从 cookie 获取 token（httpOnly cookie 会自动携带）
+    // 如果后端支持 Bearer header，也可以从 sessionStorage 获取
+    const token = document.cookie.match(/token=([^;]+)/)?.[1]
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
@@ -64,9 +65,9 @@ service.interceptors.response.use(
       switch (status) {
         case 401:
           ElMessage.error('登录已过期，请重新登录')
-          // 清除 token
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
+          // 清除 cookie 和 session
+          document.cookie = 'token=; Path=/; Max-Age=0'
+          sessionStorage.removeItem('user')
           // 跳转到登录页
           window.location.href = '/login'
           break

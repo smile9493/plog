@@ -162,6 +162,24 @@ export const asyncRoutes: RouteRecordRaw[] = [
         ]
       },
       {
+        path: 'role',
+        name: 'Role',
+        component: () => import('@/views/role/index.vue'),
+        meta: {
+          title: '角色管理',
+          icon: 'Avatar'
+        }
+      },
+      {
+        path: 'permission',
+        name: 'Permission',
+        component: () => import('@/views/permission/index.vue'),
+        meta: {
+          title: '权限管理',
+          icon: 'Lock'
+        }
+      },
+      {
         path: 'setting',
         name: 'Setting',
         component: () => import('@/views/setting/index.vue'),

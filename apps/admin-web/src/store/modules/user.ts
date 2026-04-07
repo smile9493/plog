@@ -3,6 +3,16 @@ import type { User, LoginForm } from '@/types'
 import { authApi } from '@/api/auth'
 import { ElMessage } from 'element-plus'
 
+// Cookie 工具函数
+function getCookie(name: string): string {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return match ? decodeURIComponent(match[2]) : ''
+}
+
+function deleteCookie(name: string) {
+  document.cookie = name + '=; Path=/; Max-Age=0; SameSite=Strict'
+}
+
 interface UserState {
   token: string
   user: User | null
@@ -10,8 +20,8 @@ interface UserState {
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
-    token: localStorage.getItem('token') || '',
-    user: JSON.parse(localStorage.getItem('user') || 'null')
+    token: getCookie('token') || '',
+    user: sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : null
   }),
   
   getters: {
@@ -23,7 +33,6 @@ export const useUserStore = defineStore('user', {
   },
   
   actions: {
-    // 登录
     async login(loginForm: LoginForm) {
       try {
         const { token, user } = await authApi.login(loginForm)
@@ -31,9 +40,8 @@ export const useUserStore = defineStore('user', {
         this.token = token
         this.user = user
         
-        // 持久化存储
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify(user))
+        // Token 通过 httpOnly cookie 存储，用户信息存储在 sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(user))
         
         ElMessage.success('登录成功')
         return true
@@ -42,7 +50,6 @@ export const useUserStore = defineStore('user', {
       }
     },
     
-    // 登出
     async logout() {
       try {
         await authApi.logout()
@@ -51,29 +58,27 @@ export const useUserStore = defineStore('user', {
       } finally {
         this.token = ''
         this.user = null
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+        deleteCookie('token')
+        sessionStorage.removeItem('user')
       }
     },
     
-    // 获取当前用户信息
     async fetchCurrentUser() {
       try {
         const user = await authApi.getCurrentUser()
         this.user = user
-        localStorage.setItem('user', JSON.stringify(user))
+        sessionStorage.setItem('user', JSON.stringify(user))
         return user
       } catch (error) {
         return null
       }
     },
     
-    // 更新用户信息
     async updateProfile(data: Partial<User>) {
       try {
         const user = await authApi.updateProfile(data)
         this.user = user
-        localStorage.setItem('user', JSON.stringify(user))
+        sessionStorage.setItem('user', JSON.stringify(user))
         ElMessage.success('更新成功')
         return true
       } catch (error) {
@@ -81,7 +86,6 @@ export const useUserStore = defineStore('user', {
       }
     },
     
-    // 修改密码
     async changePassword(data: { old_password: string; new_password: string }) {
       try {
         await authApi.changePassword(data)

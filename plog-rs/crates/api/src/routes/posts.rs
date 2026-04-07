@@ -6,11 +6,12 @@ use axum::{
     Router, Json,
 };
 use serde::Deserialize;
+use validator::Validate;
 use std::sync::Arc;
 
 use crate::AppState;
 use plog_auth::AuthUser;
-use plog_core::types::ApiResponse;
+use plog_contracts::ApiResponse;
 use plog_content::{repository::PostRepository, entities::post};
 
 /// 创建文章路由
@@ -22,7 +23,6 @@ pub fn routes() -> Router<AppState> {
 
 /// 查询参数
 #[derive(Debug, Deserialize)]
-#[allow(dead_code)]
 pub struct ListParams {
     pub page: Option<u64>,
     pub per_page: Option<u64>,
@@ -33,33 +33,44 @@ pub struct ListParams {
 }
 
 /// 创建文章请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct CreatePostRequest {
+    #[validate(length(min = 1, max = 200))]
     pub title: String,
+    #[validate(length(min = 1, max = 100000))]
     pub content: String,
+    #[validate(length(max = 500))]
     pub excerpt: Option<String>,
     pub sortid: Option<i32>,
     pub cover: Option<String>,
+    #[validate(length(max = 100))]
     pub alias: Option<String>,
     pub hide: Option<String>,
     pub top: Option<String>,
     pub allow_remark: Option<String>,
+    #[validate(length(max = 100))]
     pub password: Option<String>,
+    #[validate(length(max = 20))]
     pub r#type: Option<String>,
 }
 
 /// 更新文章请求
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct UpdatePostRequest {
+    #[validate(length(min = 1, max = 200))]
     pub title: Option<String>,
+    #[validate(length(max = 100000))]
     pub content: Option<String>,
+    #[validate(length(max = 500))]
     pub excerpt: Option<String>,
     pub sortid: Option<i32>,
     pub cover: Option<String>,
+    #[validate(length(max = 100))]
     pub alias: Option<String>,
     pub hide: Option<String>,
     pub top: Option<String>,
     pub allow_remark: Option<String>,
+    #[validate(length(max = 100))]
     pub password: Option<String>,
 }
 
@@ -72,16 +83,14 @@ async fn list_posts(
     let page = params.page.unwrap_or(1);
     let per_page = params.per_page.unwrap_or(20).min(100);
 
-    // 使用现有的 repository 方法
-    let result = if let Some(keyword) = params.keyword {
-        if !keyword.is_empty() {
-            repo.search(&keyword, page, per_page).await
-        } else {
-            repo.find_published(page, per_page).await
-        }
-    } else {
-        repo.find_published(page, per_page).await
-    };
+    let result = repo.filter(
+        params.category_id,
+        params.keyword.as_deref(),
+        params.status.as_deref(),
+        params.order.as_deref(),
+        page,
+        per_page,
+    ).await;
 
     match result {
         Ok((posts, total)) => {
@@ -122,12 +131,28 @@ async fn create_post(
     user: AuthUser,
     Json(payload): Json<CreatePostRequest>,
 ) -> Json<ApiResponse<serde_json::Value>> {
-    let repo = PostRepository::new(Arc::new(state.db));
-
-    // 验证必填字段
-    if payload.title.trim().is_empty() {
-        return Json(ApiResponse::error("VALIDATION_ERROR", "Title is required"));
+    if let Err(e) = payload.validate() {
+        let details: Vec<serde_json::Value> = e
+            .field_errors()
+            .iter()
+            .flat_map(|(field, errors)| {
+                let field = field.to_string();
+                errors.iter().map(move |err| {
+                    serde_json::json!({
+                        "field": field,
+                        "message": err.message.as_ref().map(|m| m.to_string()).unwrap_or_else(|| "validation failed".to_string())
+                    })
+                })
+            })
+            .collect();
+        return Json(ApiResponse::error_with_details(
+            "VALIDATION_ERROR",
+            "请求数据验证失败",
+            serde_json::json!(details),
+        ));
     }
+
+    let repo = PostRepository::new(Arc::new(state.db));
 
     let now = chrono::Utc::now().timestamp();
     let new_post = post::ActiveModel {

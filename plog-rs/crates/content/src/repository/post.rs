@@ -142,22 +142,72 @@ impl PostRepository {
         Ok(result.rows_affected > 0)
     }
 
-    /// 增加浏览量
+    /// 增加浏览量（原子操作）
     pub async fn increment_views(&self, id: i32) -> Result<bool, DbErr> {
-        let post: Option<Model> = Entity::find_by_id(id).one(&*self.db).await?;
-
-        if let Some(model) = post {
-            let mut active: ActiveModel = model.into();
-            active.views = Set(active.views.unwrap() + 1);
-            active.update(&*self.db).await?;
-            Ok(true)
-        } else {
-            Ok(false)
-        }
+        let result = Entity::update_many()
+            .col_expr(Column::Views, sea_orm::prelude::Expr::col(Column::Views).add(1))
+            .filter(Column::Gid.eq(id))
+            .exec(&*self.db)
+            .await?;
+        Ok(result.rows_affected > 0)
     }
 
     /// 获取文章总数
     pub async fn count(&self) -> Result<u64, DbErr> {
         Entity::find().count(&*self.db).await
+    }
+
+    /// 筛选文章（支持分类、关键词、状态、排序）
+    pub async fn filter(
+        &self,
+        category_id: Option<i32>,
+        keyword: Option<&str>,
+        status: Option<&str>,
+        order: Option<&str>,
+        page: u64,
+        per_page: u64,
+    ) -> Result<(Vec<Model>, u64), DbErr> {
+        let mut query = Entity::find();
+
+        // 按分类筛选
+        if let Some(cat_id) = category_id {
+            query = query.filter(Column::Sortid.eq(cat_id));
+        }
+
+        // 按关键词搜索
+        if let Some(kw) = keyword {
+            if !kw.is_empty() {
+                query = query.filter(
+                    Condition::any()
+                        .add(Column::Title.contains(kw))
+                        .add(Column::Content.contains(kw))
+                );
+            }
+        }
+
+        // 按状态筛选
+        if let Some(st) = status {
+            query = query.filter(Column::Hide.eq(st));
+        } else {
+            // 默认只显示已发布的
+            query = query.filter(Column::Hide.eq("n"));
+        }
+
+        // 按类型筛选（默认只显示博客）
+        query = query.filter(Column::Type.eq("blog"));
+
+        // 排序
+        match order {
+            Some("views") => query = query.order_by_desc(Column::Views),
+            Some("title") => query = query.order_by_asc(Column::Title),
+            Some("date_asc") => query = query.order_by_asc(Column::Date),
+            _ => query = query.order_by_desc(Column::Date),
+        }
+
+        let paginator = query.paginate(&*self.db, per_page);
+        let total = paginator.num_items().await?;
+        let items = paginator.fetch_page(page - 1).await?;
+
+        Ok((items, total))
     }
 }

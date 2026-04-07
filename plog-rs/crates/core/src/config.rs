@@ -10,6 +10,7 @@ pub struct AppConfig {
     pub database: DatabaseSettings,
     pub auth: AuthSettings,
     pub server: ServerSettings,
+    pub cors: CorsSettings,
 }
 
 /// 应用设置
@@ -42,6 +43,12 @@ pub struct ServerSettings {
     pub port: u16,
 }
 
+/// CORS 设置
+#[derive(Debug, Clone, Deserialize)]
+pub struct CorsSettings {
+    pub allowed_origins: Vec<String>,
+}
+
 impl AppConfig {
     /// 加载配置
     pub fn load() -> Result<Self, ConfigError> {
@@ -57,6 +64,10 @@ impl AppConfig {
             .set_default("auth.jwt_expiration", 86400)?
             .set_default("server.host", "127.0.0.1")?
             .set_default("server.port", 8080)?
+            .set_default(
+                "cors.allowed_origins",
+                vec!["http://localhost:3000", "http://localhost:5173"],
+            )?
             // 配置文件
             .add_source(File::with_name("config/default").required(false))
             .add_source(File::with_name(&format!("config/{}", env)).required(false))

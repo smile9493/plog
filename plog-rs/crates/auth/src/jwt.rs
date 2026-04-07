@@ -68,4 +68,67 @@ impl JwtService {
         let claims = self.validate_token(token)?;
         self.generate_token(claims.sub, &claims.username, &claims.role)
     }
+
+    /// 获取过期时间
+    pub fn expiration(&self) -> i64 {
+        self.expiration
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_jwt_service() -> JwtService {
+        JwtService::new("test-secret-key-for-unit-testing", 3600)
+    }
+
+    #[test]
+    fn test_generate_and_validate_token() {
+        let jwt = create_jwt_service();
+
+        let token = jwt.generate_token(1, "testuser", "admin").unwrap();
+        assert!(!token.is_empty());
+
+        let claims = jwt.validate_token(&token).unwrap();
+        assert_eq!(claims.sub, 1);
+        assert_eq!(claims.username, "testuser");
+        assert_eq!(claims.role, "admin");
+        assert!(claims.exp > claims.iat);
+    }
+
+    #[test]
+    fn test_validate_invalid_token() {
+        let jwt = create_jwt_service();
+        let result = jwt.validate_token("invalid-token-string");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_validate_token_wrong_secret() {
+        let jwt1 = JwtService::new("secret-one", 3600);
+        let jwt2 = JwtService::new("secret-two", 3600);
+
+        let token = jwt1.generate_token(1, "user", "admin").unwrap();
+        let result = jwt2.validate_token(&token);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_refresh_token() {
+        let jwt = create_jwt_service();
+
+        let token = jwt.generate_token(1, "testuser", "admin").unwrap();
+        let new_token = jwt.refresh_token(&token).unwrap();
+
+        let claims = jwt.validate_token(&new_token).unwrap();
+        assert_eq!(claims.sub, 1);
+        assert_eq!(claims.username, "testuser");
+    }
+
+    #[test]
+    fn test_expiration() {
+        let jwt = JwtService::new("test", 7200);
+        assert_eq!(jwt.expiration(), 7200);
+    }
 }

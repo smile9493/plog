@@ -63,6 +63,18 @@ config/sync_config.json
 .pi/
 .trae/
 .trae-cn/
+.trellis/
+agent-transcripts/
+agent-tools/
+terminals/
+
+# ==================== 压缩包 ====================
+*.zip
+*.tar.gz
+*.rar
+
+# ==================== Rust 后端构建 ====================
+# (already covered by plog-rs/target/ and plog-rs/Cargo.lock above)
 
 # ==================== 敏感信息 ====================
 *.key

@@ -3,7 +3,7 @@
 //! 基于 contracts 模块的插件 manifest 规范
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub use plog_contracts::plugin::{
     AdminAssets, EventSubscription, JobRegistration, MenuRegistration, PageRegistration,
@@ -98,10 +98,30 @@ pub const MANIFEST_FILENAME: &str = "plugin.toml";
 
 /// 从文件加载 manifest
 pub fn load_manifest_from_file(path: &Path) -> Result<PluginManifest, PluginError> {
-    let content = std::fs::read_to_string(path).map_err(|e| PluginError::IoError(e.to_string()))?;
+    let content = std::fs::read_to_string(path).map_err(|source| PluginError::Io {
+        path: path.to_path_buf(),
+        source,
+    })?;
 
-    toml::from_str(&content)
-        .map_err(|e| PluginError::ParseError(format!("Failed to parse manifest: {}", e)))
+    toml::from_str(&content).map_err(|source| PluginError::Parse {
+        path: path.to_path_buf(),
+        source,
+    })
+}
+
+/// 从文件异步加载 manifest
+pub async fn load_manifest_from_file_async(path: &Path) -> Result<PluginManifest, PluginError> {
+    let content = tokio::fs::read_to_string(path)
+        .await
+        .map_err(|source| PluginError::Io {
+            path: path.to_path_buf(),
+            source,
+        })?;
+
+    toml::from_str(&content).map_err(|source| PluginError::Parse {
+        path: path.to_path_buf(),
+        source,
+    })
 }
 
 /// 从目录加载 manifest
@@ -110,14 +130,28 @@ pub fn load_manifest_from_dir(dir: &Path) -> Result<PluginManifest, PluginError>
     load_manifest_from_file(&manifest_path)
 }
 
+/// 从目录异步加载 manifest
+pub async fn load_manifest_from_dir_async(dir: &Path) -> Result<PluginManifest, PluginError> {
+    let manifest_path = dir.join(MANIFEST_FILENAME);
+    load_manifest_from_file_async(&manifest_path).await
+}
+
 /// 插件错误
 #[derive(Debug, thiserror::Error)]
 pub enum PluginError {
-    #[error("IO error: {0}")]
-    IoError(String),
+    #[error("IO error at `{path}`: {source}")]
+    Io {
+        path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
 
-    #[error("Parse error: {0}")]
-    ParseError(String),
+    #[error("Parse error at `{path}`: {source}")]
+    Parse {
+        path: PathBuf,
+        #[source]
+        source: toml::de::Error,
+    },
 
     #[error("Plugin not found: {0}")]
     NotFound(String),
@@ -133,6 +167,9 @@ pub enum PluginError {
 
     #[error("Version mismatch: {0}")]
     VersionMismatch(String),
+
+    #[error("Operation timeout: {0}")]
+    Timeout(String),
 }
 
 /// 插件列表响应

@@ -238,3 +238,38 @@ fn test_page_template() {
     assert_eq!(template.id, "post");
     assert_eq!(template.template, "post.html");
 }
+
+#[tokio::test]
+async fn test_discover_async_with_timeout_missing_dir() {
+    let missing = std::env::temp_dir().join("plog-theme-missing-dir");
+    let mut manager = ThemeManager::new(&missing);
+    let items = manager.discover_async_with_timeout().await.unwrap();
+    assert!(items.is_empty());
+}
+
+#[tokio::test]
+async fn test_discover_async_with_timeout_reads_manifest() {
+    let dir = tempfile::tempdir().unwrap();
+    let theme_dir = dir.path().join("demo-theme");
+    std::fs::create_dir_all(&theme_dir).unwrap();
+    std::fs::write(
+        theme_dir.join("theme.toml"),
+        r#"
+id = "demo-theme"
+name = "Demo Theme"
+version = "1.0.0"
+
+[[layouts]]
+id = "default"
+name = "Default"
+template = "layout.html"
+default = true
+"#,
+    )
+    .unwrap();
+
+    let mut manager = ThemeManager::new(dir.path());
+    let items = manager.discover_async_with_timeout().await.unwrap();
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0].manifest.id, "demo-theme");
+}

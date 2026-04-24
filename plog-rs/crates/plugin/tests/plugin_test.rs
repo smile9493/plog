@@ -183,3 +183,32 @@ fn test_job_registration() {
     assert_eq!(job.schedule, "0 0 * * *");
     assert!(job.enabled);
 }
+
+#[tokio::test]
+async fn test_discover_async_with_timeout_missing_dir() {
+    let missing = std::env::temp_dir().join("plog-plugin-missing-dir");
+    let mut manager = PluginManager::new(&missing);
+    let items = manager.discover_async_with_timeout().await.unwrap();
+    assert!(items.is_empty());
+}
+
+#[tokio::test]
+async fn test_discover_async_with_timeout_reads_manifest() {
+    let dir = tempfile::tempdir().unwrap();
+    let plugin_dir = dir.path().join("demo-plugin");
+    std::fs::create_dir_all(&plugin_dir).unwrap();
+    std::fs::write(
+        plugin_dir.join("plugin.toml"),
+        r#"
+id = "demo-plugin"
+name = "Demo Plugin"
+version = "1.0.0"
+"#,
+    )
+    .unwrap();
+
+    let mut manager = PluginManager::new(dir.path());
+    let items = manager.discover_async_with_timeout().await.unwrap();
+    assert_eq!(items.len(), 1);
+    assert_eq!(items[0].manifest.id, "demo-plugin");
+}

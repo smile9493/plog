@@ -3,7 +3,7 @@
 //! 基于 contracts 模块的主题 manifest 规范
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub use plog_contracts::theme::{
     LayoutDefinition, PageTemplate, SlotDefinition, ThemeAssets as ManifestAssets, ThemeFeature,
@@ -89,10 +89,30 @@ pub const MANIFEST_FILENAME: &str = "theme.toml";
 
 /// 从文件加载 manifest
 pub fn load_manifest_from_file(path: &Path) -> Result<ThemeManifest, ThemeError> {
-    let content = std::fs::read_to_string(path).map_err(|e| ThemeError::IoError(e.to_string()))?;
+    let content = std::fs::read_to_string(path).map_err(|source| ThemeError::Io {
+        path: path.to_path_buf(),
+        source,
+    })?;
 
-    toml::from_str(&content)
-        .map_err(|e| ThemeError::ParseError(format!("Failed to parse manifest: {}", e)))
+    toml::from_str(&content).map_err(|source| ThemeError::Parse {
+        path: path.to_path_buf(),
+        source,
+    })
+}
+
+/// 从文件异步加载 manifest
+pub async fn load_manifest_from_file_async(path: &Path) -> Result<ThemeManifest, ThemeError> {
+    let content = tokio::fs::read_to_string(path)
+        .await
+        .map_err(|source| ThemeError::Io {
+            path: path.to_path_buf(),
+            source,
+        })?;
+
+    toml::from_str(&content).map_err(|source| ThemeError::Parse {
+        path: path.to_path_buf(),
+        source,
+    })
 }
 
 /// 从目录加载 manifest
@@ -101,14 +121,38 @@ pub fn load_manifest_from_dir(dir: &Path) -> Result<ThemeManifest, ThemeError> {
     load_manifest_from_file(&manifest_path)
 }
 
+/// 从目录异步加载 manifest
+pub async fn load_manifest_from_dir_async(dir: &Path) -> Result<ThemeManifest, ThemeError> {
+    let manifest_path = dir.join(MANIFEST_FILENAME);
+    load_manifest_from_file_async(&manifest_path).await
+}
+
 /// 主题错误
 #[derive(Debug, thiserror::Error)]
 pub enum ThemeError {
-    #[error("IO error: {0}")]
-    IoError(String),
+    #[error("IO error at `{path}`: {source}")]
+    Io {
+        path: PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
 
-    #[error("Parse error: {0}")]
-    ParseError(String),
+    #[error("Parse error at `{path}`: {source}")]
+    Parse {
+        path: PathBuf,
+        #[source]
+        source: toml::de::Error,
+    },
+
+    #[error("Template error at `{path}`: {source}")]
+    Template {
+        path: PathBuf,
+        #[source]
+        source: tera::Error,
+    },
+
+    #[error("Context serialization error: {0}")]
+    Serialization(#[from] serde_json::Error),
 
     #[error("Theme not found: {0}")]
     NotFound(String),
@@ -118,6 +162,9 @@ pub enum ThemeError {
 
     #[error("Theme is active: {0}")]
     IsActive(String),
+
+    #[error("Operation timeout: {0}")]
+    Timeout(String),
 }
 
 /// 主题列表响应

@@ -3,7 +3,7 @@
 //! 基于 Tera 实现 Rust 主题模板渲染
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use serde::Serialize;
 use tera::Tera;
@@ -22,8 +22,10 @@ impl TemplateRenderer {
         let template_dir = template_dir.into();
         let pattern = template_dir.join("**/*.html").to_string_lossy().to_string();
 
-        let mut tera = Tera::new(&pattern)
-            .map_err(|e| ThemeError::ParseError(format!("Failed to parse templates: {}", e)))?;
+        let mut tera = Tera::new(&pattern).map_err(|source| ThemeError::Template {
+            path: template_dir.clone(),
+            source,
+        })?;
 
         // 注册自定义过滤器
         tera.register_filter("truncate", truncate_filter);
@@ -39,8 +41,7 @@ impl TemplateRenderer {
         template_name: &str,
         context: &impl Serialize,
     ) -> Result<String, ThemeError> {
-        let json = serde_json::to_value(context)
-            .map_err(|e| ThemeError::ParseError(format!("Failed to serialize context: {}", e)))?;
+        let json = serde_json::to_value(context).map_err(ThemeError::Serialization)?;
 
         let mut tera_context = tera::Context::new();
         tera_context.insert("page", &json);
@@ -54,7 +55,10 @@ impl TemplateRenderer {
 
         self.tera
             .render(template_name, &tera_context)
-            .map_err(|e| ThemeError::ParseError(format!("Failed to render template: {}", e)))
+            .map_err(|source| ThemeError::Template {
+                path: self.template_dir.join(template_name),
+                source,
+            })
     }
 
     /// 渲染字符串模板
@@ -63,8 +67,7 @@ impl TemplateRenderer {
         template: &str,
         context: &impl Serialize,
     ) -> Result<String, ThemeError> {
-        let json = serde_json::to_value(context)
-            .map_err(|e| ThemeError::ParseError(format!("Failed to serialize context: {}", e)))?;
+        let json = serde_json::to_value(context).map_err(ThemeError::Serialization)?;
 
         let mut tera_context = tera::Context::new();
         tera_context.insert("page", &json);
@@ -76,7 +79,10 @@ impl TemplateRenderer {
         }
 
         Tera::one_off(template, &tera_context, false)
-            .map_err(|e| ThemeError::ParseError(format!("Failed to render string template: {}", e)))
+            .map_err(|source| ThemeError::Template {
+                path: PathBuf::from("<inline-template>"),
+                source,
+            })
     }
 
     /// 获取所有可用模板名称
@@ -90,6 +96,17 @@ impl TemplateRenderer {
     }
 }
 
+fn truncate_str(input: &str, max_chars: usize) -> String {
+    let mut chars = input.chars();
+    let truncated: String = chars.by_ref().take(max_chars).collect();
+
+    if chars.next().is_some() {
+        format!("{truncated}...")
+    } else {
+        truncated
+    }
+}
+
 /// 截断过滤器
 fn truncate_filter(
     value: &tera::Value,
@@ -98,11 +115,7 @@ fn truncate_filter(
     let s = tera::try_get_value!("truncate", "value", String, value);
     let length = args.get("length").and_then(|v| v.as_u64()).unwrap_or(100) as usize;
 
-    if s.len() <= length {
-        Ok(tera::Value::String(s))
-    } else {
-        Ok(tera::Value::String(format!("{}...", &s[..length])))
-    }
+    Ok(tera::Value::String(truncate_str(&s, length)))
 }
 
 /// 日期格式化过滤器
@@ -148,12 +161,13 @@ mod tests {
     fn test_render_simple_template() {
         let temp_dir = std::env::temp_dir().join("plog_theme_test");
         let templates_dir = temp_dir.join("templates");
-        fs::create_dir_all(&templates_dir).unwrap();
-        fs::write(templates_dir.join("hello.html"), "Hello, {{ name }}!").unwrap();
+        fs::create_dir_all(&templates_dir).expect("create temporary template directory");
+        fs::write(templates_dir.join("hello.html"), "Hello, {{ name }}!")
+            .expect("write hello template");
 
-        let renderer = TemplateRenderer::new(&templates_dir).unwrap();
+        let renderer = TemplateRenderer::new(&templates_dir).expect("create template renderer");
         let context = serde_json::json!({"name": "World"});
-        let result = renderer.render("hello.html", &context).unwrap();
+        let result = renderer.render("hello.html", &context).expect("render hello template");
 
         assert_eq!(result, "Hello, World!");
 
@@ -164,19 +178,19 @@ mod tests {
     fn test_render_with_page_context() {
         let temp_dir = std::env::temp_dir().join("plog_theme_test2");
         let templates_dir = temp_dir.join("templates");
-        fs::create_dir_all(&templates_dir).unwrap();
+        fs::create_dir_all(&templates_dir).expect("create temporary template directory");
         fs::write(
             templates_dir.join("post.html"),
             "<h1>{{ page.title }}</h1><p>{{ page.content }}</p>",
         )
-        .unwrap();
+        .expect("write post template");
 
-        let renderer = TemplateRenderer::new(&templates_dir).unwrap();
+        let renderer = TemplateRenderer::new(&templates_dir).expect("create template renderer");
         let context = serde_json::json!({
             "title": "Test Post",
             "content": "Hello World"
         });
-        let result = renderer.render("post.html", &context).unwrap();
+        let result = renderer.render("post.html", &context).expect("render post template");
 
         assert!(result.contains("<h1>Test Post</h1>"));
         assert!(result.contains("<p>Hello World</p>"));
@@ -188,16 +202,16 @@ mod tests {
     fn test_truncate_filter() {
         let temp_dir = std::env::temp_dir().join("plog_theme_test3");
         let templates_dir = temp_dir.join("templates");
-        fs::create_dir_all(&templates_dir).unwrap();
+        fs::create_dir_all(&templates_dir).expect("create temporary template directory");
         fs::write(
             templates_dir.join("excerpt.html"),
             "{{ text | truncate(length=10) }}",
         )
-        .unwrap();
+        .expect("write excerpt template");
 
-        let renderer = TemplateRenderer::new(&templates_dir).unwrap();
+        let renderer = TemplateRenderer::new(&templates_dir).expect("create template renderer");
         let context = serde_json::json!({"text": "This is a long text that should be truncated"});
-        let result = renderer.render("excerpt.html", &context).unwrap();
+        let result = renderer.render("excerpt.html", &context).expect("render excerpt template");
 
         assert_eq!(result, "This is a ...");
 
@@ -208,10 +222,10 @@ mod tests {
     fn test_has_template() {
         let temp_dir = std::env::temp_dir().join("plog_theme_test4");
         let templates_dir = temp_dir.join("templates");
-        fs::create_dir_all(&templates_dir).unwrap();
-        fs::write(templates_dir.join("index.html"), "Index").unwrap();
+        fs::create_dir_all(&templates_dir).expect("create temporary template directory");
+        fs::write(templates_dir.join("index.html"), "Index").expect("write index template");
 
-        let renderer = TemplateRenderer::new(&templates_dir).unwrap();
+        let renderer = TemplateRenderer::new(&templates_dir).expect("create template renderer");
 
         assert!(renderer.has_template("index.html"));
         assert!(!renderer.has_template("missing.html"));
@@ -222,11 +236,12 @@ mod tests {
     #[test]
     fn test_render_str() {
         let renderer = TemplateRenderer::new("/tmp/nonexistent").unwrap_or_else(|_| {
-            TemplateRenderer::new(std::env::temp_dir().join("plog_empty")).unwrap()
+            TemplateRenderer::new(std::env::temp_dir().join("plog_empty"))
+                .expect("create fallback empty template renderer")
         });
 
         let context = serde_json::json!({"name": "Rust"});
-        let result = renderer.render_str("Hello, {{ name }}!", &context).unwrap();
+        let result = renderer.render_str("Hello, {{ name }}!", &context).expect("render inline template");
         assert_eq!(result, "Hello, Rust!");
     }
 }

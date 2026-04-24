@@ -2,8 +2,12 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use crate::types::*;
+
+const DISCOVER_TIMEOUT: Duration = Duration::from_secs(2);
+const IO_TIMEOUT: Duration = Duration::from_secs(2);
 
 /// 主题管理器
 pub struct ThemeManager {
@@ -30,8 +34,10 @@ impl ThemeManager {
             return Ok(discovered);
         }
 
-        let entries =
-            std::fs::read_dir(&self.themes_dir).map_err(|e| ThemeError::IoError(e.to_string()))?;
+        let entries = std::fs::read_dir(&self.themes_dir).map_err(|source| ThemeError::Io {
+            path: self.themes_dir.clone(),
+            source,
+        })?;
 
         for entry in entries.flatten() {
             let path = entry.path();
@@ -57,6 +63,69 @@ impl ThemeManager {
         Ok(discovered)
     }
 
+    /// 异步发现所有主题
+    pub async fn discover_async(&mut self) -> Result<Vec<ThemeInfo>, ThemeError> {
+        tracing::debug!("Discover themes started: dir={}", self.themes_dir.display());
+        let mut discovered = Vec::new();
+
+        if !self.themes_dir.exists() {
+            tracing::debug!("Theme dir does not exist, skip discovery");
+            return Ok(discovered);
+        }
+
+        let mut entries = tokio::fs::read_dir(&self.themes_dir)
+            .await
+            .map_err(|source| ThemeError::Io {
+                path: self.themes_dir.clone(),
+                source,
+            })?;
+
+        while let Some(entry) = entries.next_entry().await.map_err(|source| ThemeError::Io {
+            path: self.themes_dir.clone(),
+            source,
+        })? {
+            let path = entry.path();
+
+            if path.is_dir() {
+                let manifest_path = path.join(MANIFEST_FILENAME);
+                if manifest_path.exists() {
+                    if let Ok(manifest) = load_manifest_from_file_async(&manifest_path).await {
+                        let theme_id = manifest.id.clone();
+                        let theme_info =
+                            ThemeInfo::from_manifest(manifest, path.to_str().unwrap_or(""));
+
+                        if !self.themes.contains_key(&theme_id) {
+                            self.themes.insert(theme_id.clone(), theme_info.clone());
+                        }
+
+                        discovered.push(theme_info);
+                    }
+                }
+            }
+        }
+
+        tracing::debug!("Discover themes completed: count={}", discovered.len());
+        Ok(discovered)
+    }
+
+    /// 异步发现所有主题（带超时保护）
+    pub async fn discover_async_with_timeout(&mut self) -> Result<Vec<ThemeInfo>, ThemeError> {
+        match tokio::time::timeout(DISCOVER_TIMEOUT, self.discover_async()).await {
+            Ok(result) => result,
+            Err(_) => {
+                tracing::warn!(
+                    "Discover themes timeout after {}s: dir={}",
+                    DISCOVER_TIMEOUT.as_secs(),
+                    self.themes_dir.display()
+                );
+                Err(ThemeError::Timeout(format!(
+                    "Theme discovery timed out after {}s",
+                    DISCOVER_TIMEOUT.as_secs()
+                )))
+            }
+        }
+    }
+
     /// 加载主题
     pub fn load_theme(&mut self, theme_id: &str) -> Result<(), ThemeError> {
         let theme_dir = self.themes_dir.join(theme_id);
@@ -64,6 +133,33 @@ impl ThemeManager {
 
         let theme_info = ThemeInfo::from_manifest(manifest, theme_dir.to_str().unwrap_or(""));
         self.themes.insert(theme_id.to_string(), theme_info);
+        Ok(())
+    }
+
+    /// 异步加载主题
+    pub async fn load_theme_async(&mut self, theme_id: &str) -> Result<(), ThemeError> {
+        let theme_dir = self.themes_dir.join(theme_id);
+        tracing::debug!("Load theme started: id={}", theme_id);
+        let manifest = match tokio::time::timeout(IO_TIMEOUT, load_manifest_from_dir_async(&theme_dir)).await {
+            Ok(result) => result?,
+            Err(_) => {
+                tracing::warn!(
+                    "Load theme timeout after {}s: id={}, dir={}",
+                    IO_TIMEOUT.as_secs(),
+                    theme_id,
+                    theme_dir.display()
+                );
+                return Err(ThemeError::Timeout(format!(
+                    "Theme load timed out after {}s: {}",
+                    IO_TIMEOUT.as_secs(),
+                    theme_id
+                )));
+            }
+        };
+
+        let theme_info = ThemeInfo::from_manifest(manifest, theme_dir.to_str().unwrap_or(""));
+        self.themes.insert(theme_id.to_string(), theme_info);
+        tracing::debug!("Load theme completed: id={}", theme_id);
         Ok(())
     }
 
@@ -86,7 +182,7 @@ impl ThemeManager {
 
     /// 停用主题
     pub fn deactivate_theme(&mut self, theme_id: &str) -> Result<(), ThemeError> {
-        if self.active_theme.as_ref() == Some(&theme_id.to_string()) {
+        if self.active_theme.as_deref() == Some(theme_id) {
             return Err(ThemeError::IsActive(theme_id.to_string()));
         }
 
@@ -99,20 +195,60 @@ impl ThemeManager {
 
     /// 卸载主题
     pub fn uninstall_theme(&mut self, theme_id: &str) -> Result<(), ThemeError> {
-        if self.active_theme.as_ref() == Some(&theme_id.to_string()) {
+        if self.active_theme.as_deref() == Some(theme_id) {
             return Err(ThemeError::IsActive(theme_id.to_string()));
         }
 
-        let path = self
+        let theme = self
             .themes
             .get(theme_id)
-            .ok_or_else(|| ThemeError::NotFound(theme_id.to_string()))?
-            .path
-            .clone();
+            .ok_or_else(|| ThemeError::NotFound(theme_id.to_string()))?;
 
-        let theme_dir = Path::new(&path);
+        let theme_dir = Path::new(&theme.path);
         if theme_dir.exists() {
-            std::fs::remove_dir_all(theme_dir).map_err(|e| ThemeError::IoError(e.to_string()))?;
+            std::fs::remove_dir_all(theme_dir).map_err(|source| ThemeError::Io {
+                path: theme_dir.to_path_buf(),
+                source,
+            })?;
+        }
+
+        self.themes.remove(theme_id);
+        Ok(())
+    }
+
+    /// 异步卸载主题
+    pub async fn uninstall_theme_async(&mut self, theme_id: &str) -> Result<(), ThemeError> {
+        if self.active_theme.as_deref() == Some(theme_id) {
+            return Err(ThemeError::IsActive(theme_id.to_string()));
+        }
+
+        let theme = self
+            .themes
+            .get(theme_id)
+            .ok_or_else(|| ThemeError::NotFound(theme_id.to_string()))?;
+
+        let theme_dir = Path::new(&theme.path);
+        if theme_dir.exists() {
+            let delete_fut = tokio::fs::remove_dir_all(theme_dir);
+            match tokio::time::timeout(IO_TIMEOUT, delete_fut).await {
+                Ok(result) => result.map_err(|source| ThemeError::Io {
+                    path: theme_dir.to_path_buf(),
+                    source,
+                })?,
+                Err(_) => {
+                    tracing::warn!(
+                        "Uninstall theme timeout after {}s: id={}, dir={}",
+                        IO_TIMEOUT.as_secs(),
+                        theme_id,
+                        theme_dir.display()
+                    );
+                    return Err(ThemeError::Timeout(format!(
+                        "Theme uninstall timed out after {}s: {}",
+                        IO_TIMEOUT.as_secs(),
+                        theme_id
+                    )));
+                }
+            }
         }
 
         self.themes.remove(theme_id);

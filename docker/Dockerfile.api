@@ -1,70 +1,42 @@
-# =============================================================================
-# Rust API Dockerfile - 生产环境 (Multi-stage build)
-# =============================================================================
+# syntax=docker/dockerfile:1
 
-# ---- Builder Stage ----
-FROM rust:1.75-slim AS builder
+FROM rust:1.85-bookworm AS builder
+WORKDIR /build
 
-WORKDIR /app
-
-# 安装构建依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 复制依赖清单
-COPY plog-rs/Cargo.toml plog-rs/Cargo.lock ./
-COPY plog-rs/crates ./crates
-COPY plog-rs/migrations ./migrations
+COPY plog-rs/ /build/plog-rs/
+WORKDIR /build/plog-rs
 
-# 预编译依赖（利用 Docker 层缓存）
-RUN cargo fetch
-RUN cargo build --release --no-default-features
-# 清理源码但保留编译产物
-RUN rm -rf crates migrations Cargo.toml Cargo.lock
+RUN cargo build -p plog-api --release
 
-# 复制源码并编译
-COPY plog-rs/Cargo.toml plog-rs/Cargo.lock ./
-COPY plog-rs/crates ./crates
-COPY plog-rs/migrations ./migrations
-RUN cargo build --release --bin plog-api
-RUN strip target/release/plog-api
-
-# ---- Runtime Stage ----
-FROM debian:bookworm-slim
-
+FROM debian:bookworm-slim AS runtime
 WORKDIR /app
 
-# 安装运行时依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libssl3 \
     ca-certificates \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --create-home --home-dir /app --shell /usr/sbin/nologin plog
 
-# 从 builder 阶段复制二进制文件
-COPY --from=builder /app/target/release/plog-api /app/plog-api
-
-# 复制配置文件
+COPY --from=builder /build/plog-rs/target/release/plog-api /usr/local/bin/plog-api
 COPY plog-rs/config/ /app/config/
 
-# 创建必要目录
 RUN mkdir -p /app/content/uploads \
-    && mkdir -p /app/content/plugins \
-    && mkdir -p /app/content/themes \
-    && mkdir -p /app/content/cache \
-    && mkdir -p /app/content/logs
+    /app/content/plugins \
+    /app/content/themes \
+    /app/content/cache \
+    /app/content/logs \
+    && chown -R plog:plog /app
 
-# 复制内容目录
-COPY content/ /app/content/
-
-# 暴露端口
+USER plog
 EXPOSE 8080
 
-# 健康检查
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD wget -q --spider http://127.0.0.1:8080/health || exit 1
 
-# 启动命令
-CMD ["/app/plog-api"]
+ENTRYPOINT ["/usr/local/bin/plog-api"]

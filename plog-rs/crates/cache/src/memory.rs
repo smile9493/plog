@@ -34,36 +34,41 @@ impl MemoryCache {
     }
 
     /// 清理过期项
-    fn cleanup(&self) {
-        let mut items = self.items.write().unwrap();
+    fn cleanup(&self) -> CacheResult<()> {
+        let mut items = self
+            .items
+            .write()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
         let now = Instant::now();
         items.retain(|_, item| item.expires_at.map_or(true, |exp| exp > now));
+        Ok(())
+    }
+
+    fn is_alive(item: &CacheItem) -> bool {
+        item.expires_at.map_or(true, |expires_at| Instant::now() < expires_at)
     }
 }
 
 impl Cache for MemoryCache {
     fn get(&self, key: &str) -> CacheResult<Option<String>> {
-        let items = self.items.read().unwrap();
+        let items = self
+            .items
+            .read()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
 
         match items.get(key) {
-            Some(item) => {
-                if let Some(expires_at) = item.expires_at {
-                    if Instant::now() > expires_at {
-                        return Ok(None);
-                    }
-                }
-                Ok(Some(item.value.clone()))
-            }
+            Some(item) if Self::is_alive(item) => Ok(Some(item.value.clone())),
+            Some(_) => Ok(None),
             None => Ok(None),
         }
     }
 
     fn set(&self, key: &str, value: &str, ttl: Option<Duration>) -> CacheResult<()> {
         let ttl = ttl.unwrap_or(self.default_ttl);
-        let expires_at = if ttl.as_secs() > 0 {
-            Some(Instant::now() + ttl)
-        } else {
+        let expires_at = if ttl.is_zero() {
             None
+        } else {
+            Some(Instant::now() + ttl)
         };
 
         let item = CacheItem {
@@ -71,60 +76,61 @@ impl Cache for MemoryCache {
             expires_at,
         };
 
-        let mut items = self.items.write().unwrap();
+        let mut items = self
+            .items
+            .write()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
         items.insert(key.to_string(), item);
 
         if items.len() > 1000 {
             drop(items);
-            self.cleanup();
+            self.cleanup()?;
         }
 
         Ok(())
     }
 
     fn delete(&self, key: &str) -> CacheResult<()> {
-        let mut items = self.items.write().unwrap();
+        let mut items = self
+            .items
+            .write()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
         items.remove(key);
         Ok(())
     }
 
     fn exists(&self, key: &str) -> CacheResult<bool> {
-        let items = self.items.read().unwrap();
+        let items = self
+            .items
+            .read()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
 
         match items.get(key) {
-            Some(item) => {
-                if let Some(expires_at) = item.expires_at {
-                    Ok(Instant::now() < expires_at)
-                } else {
-                    Ok(true)
-                }
-            }
+            Some(item) => Ok(Self::is_alive(item)),
             None => Ok(false),
         }
     }
 
     fn clear(&self) -> CacheResult<()> {
-        let mut items = self.items.write().unwrap();
+        let mut items = self
+            .items
+            .write()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
         items.clear();
         Ok(())
     }
 
     fn ttl(&self, key: &str) -> CacheResult<Option<Duration>> {
-        let items = self.items.read().unwrap();
+        let items = self
+            .items
+            .read()
+            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
 
         match items.get(key) {
-            Some(item) => {
-                if let Some(expires_at) = item.expires_at {
-                    let now = Instant::now();
-                    if now < expires_at {
-                        Ok(Some(expires_at - now))
-                    } else {
-                        Ok(None)
-                    }
-                } else {
-                    Ok(None)
-                }
+            Some(item) if Self::is_alive(item) => {
+                Ok(item.expires_at.map(|expires_at| expires_at.saturating_duration_since(Instant::now())))
             }
+            Some(_) => Ok(None),
             None => Ok(None),
         }
     }

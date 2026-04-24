@@ -1,95 +1,40 @@
-# Plog CMS - 现代化博客系统
+# Plog CMS 文档总览
 
-## 项目简介
+这里是项目文档入口，适合先读这一页，再按主题进入更细的说明。
 
-Plog 是一个基于 Rust 构建的现代化博客系统，采用前后端分离架构。
+## 推荐阅读顺序
 
-## 项目结构
+1. `README.md`：项目总览与快速开始
+2. `docs/architecture/README.md`：架构与模块划分
+3. `docker/README.md`：Docker 部署说明
+4. `plog-rs/README.md`：Rust 后端开发说明
+5. `plog-rs/docs/API.md`：API 接口说明
+6. `docs/审查模板.md`：项目审查模板
 
-```
-mytheme/
-├── apps/
-│   ├── admin-web/          # Vue 3 管理后台
-│   ├── cli-rs/             # Rust CLI 工具
-│   └── installer-rs/       # Rust 安装器
-├── plog-rs/                # Rust 后端 API
-│   ├── crates/             # 工作空间成员
-│   │   ├── api/            # API 路由
-│   │   ├── core/           # 核心模块
-│   │   ├── auth/           # 认证模块
-│   │   ├── content/        # 内容管理
-│   │   └── ...
-│   ├── config/             # 配置文件
-│   └── src/                # 主入口
-├── content/
-│   ├── templates/zen/      # Zen 前台主题
-│   └── uploadfile/         # 上传文件
-├── docker/                 # Docker 配置
-└── docs/                   # 项目文档
-```
+## 文档分类
 
-## 技术栈
+### 总览类
+- `README.md`
+- `docs/README.md`
+- `docs/architecture/README.md`
 
-- **后端**: Rust + Axum + SeaORM + MySQL
-- **前端**: Vue 3 + TypeScript + Element Plus
-- **部署**: Docker + Docker Compose
+### 后端类
+- `plog-rs/README.md`
+- `plog-rs/docs/API.md`
+- `plog-rs/docs/ASYNC_IO_MIGRATION_PLAN.md`
 
-## 快速开始
+### 部署类
+- `docker/README.md`
+- `docker/Dockerfile.api`
+- `docker/docker-compose.yml`
 
-### 1. 启动服务
-```bash
-cd docker
-docker compose up -d
-```
+### 评审与过程类
+- `docs/审查模板.md`
+- `.trellis/spec/**`
+- `.trellis/tasks/**`
 
-### 2. 访问服务
-- **前台展示**: http://localhost:8082
-- **管理后台**: http://localhost:8081
-- **API 服务**: http://localhost:8080
+## 约定
 
-### 3. 编译后端
-```bash
-cd plog-rs
-cargo build --release
-```
-
-### 4. 构建前端
-```bash
-cd apps/admin-web
-npm install
-npm run build
-```
-
-## 开发指南
-
-### 后端开发
-```bash
-cd plog-rs
-cargo run
-```
-
-### 前端开发
-```bash
-cd apps/admin-web
-npm run dev
-```
-
-## 环境变量
-
-创建 `docker/.env` 文件：
-```
-MYSQL_ROOT_PASSWORD=your_password
-MYSQL_DATABASE=plog
-MYSQL_USER=plog
-MYSQL_PASSWORD=your_password
-JWT_SECRET=your_jwt_secret
-```
-
-## 文档索引
-
-- [API 文档](plog-rs/docs/API.md)
-- [Docker 部署](docker/README.md)
-
-## 许可证
-
-MIT License
+- 文档中的路径以仓库根目录为基准。
+- 运行环境以 Linux 容器为主，尽量避免 Windows 专属路径写法。
+- 示例命令优先使用当前仓库实际结构，不再保留过时目录名。

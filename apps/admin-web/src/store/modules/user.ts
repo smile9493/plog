@@ -20,7 +20,8 @@ interface UserState {
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
-    token: getCookie('token') || '',
+    // Token 存储在 httpOnly cookie 中，前端使用 sessionStorage 中的用户信息判断登录状态
+    token: sessionStorage.getItem('user') ? 'authenticated' : '',
     user: sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')!) : null
   }),
   
@@ -35,13 +36,15 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(loginForm: LoginForm) {
       try {
-        const { token, user } = await authApi.login(loginForm)
+        const response = await authApi.login(loginForm)
         
-        this.token = token
-        this.user = user
+        // API 返回格式: { success: true, data: { user, expires_in } }
+        // Token 通过 httpOnly cookie 存储，前端无法读取
+        this.token = 'authenticated' // 标记为已认证
+        this.user = response.user
         
-        // Token 通过 httpOnly cookie 存储，用户信息存储在 sessionStorage
-        sessionStorage.setItem('user', JSON.stringify(user))
+        // 用户信息存储在 sessionStorage
+        sessionStorage.setItem('user', JSON.stringify(response.user))
         
         ElMessage.success('登录成功')
         return true

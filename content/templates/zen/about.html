@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于 - Plog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">Plog</a>
+      <nav class="nav">
+        <a href="/" class="nav-link">文章</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link">书库</a>
+        <a href="/mcp.html" class="nav-link">MCP</a>
+        <a href="/skill.html" class="nav-link">Skill</a>
+        <a href="/about.html" class="nav-link active">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">关于</h1>
+      <p class="page-subtitle">记录思考，分享知识</p>
+
+      <div class="about-section">
+        <h2>关于本站</h2>
+        <p>Plog 是一个使用 Rust + Vue 构建的现代博客系统。它追求简洁、高效和优雅，专注于内容创作与知识分享。</p>
+        <p>这个名字来源于 "P" (Personal / Publish) + "Log"，寓意个人日志与发布平台。</p>
+      </div>
+
+      <div class="about-section">
+        <h2>技术栈</h2>
+        <div class="tech-stack">
+          <span class="tech-item">🦀 Rust</span>
+          <span class="tech-item">⚡ Axum</span>
+          <span class="tech-item">🐬 MySQL</span>
+          <span class="tech-item">🌊 SeaORM</span>
+          <span class="tech-item">💚 Vue 3</span>
+          <span class="tech-item">📘 TypeScript</span>
+          <span class="tech-item">🎨 Element Plus</span>
+          <span class="tech-item">🐳 Docker</span>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>特性</h2>
+        <ul>
+          <li>🚀 高性能 Rust 后端，极低资源占用</li>
+          <li>📝 Markdown 写作，实时预览</li>
+          <li>🏷️ 分类与标签管理</li>
+          <li>🎨 多主题支持，一键切换</li>
+          <li>🔌 插件化架构，灵活扩展</li>
+          <li>🔒 JWT 认证，安全可靠</li>
+          <li>🐳 Docker 一键部署</li>
+          <li>📱 响应式设计，适配各种设备</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h2>联系方式</h2>
+        <ul>
+          <li>📧 Email: admin@plog.dev</li>
+          <li>🐙 GitHub: github.com/plog</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Plog. 保留所有权利。</p>
+    </div>
+  </footer>
+
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
+      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
+      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+</body>
+</html>

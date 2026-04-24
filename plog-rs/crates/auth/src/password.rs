@@ -37,9 +37,7 @@ impl PasswordHasher {
             plog_core::PlogError::InternalError(format!("Invalid password hash: {}", e))
         })?;
 
-        let argon2 = Argon2::new(argon2::Algorithm::Argon2id, Version::V0x13, Self::params());
-
-        Ok(argon2
+        Ok(Argon2::default()
             .verify_password(password.as_bytes(), &parsed_hash)
             .is_ok())
     }

@@ -118,9 +118,23 @@ pub async fn run() -> anyhow::Result<()> {
         .map(|o| o.parse().expect("Invalid CORS origin"))
         .collect();
     let cors = CorsLayer::new()
-        .allow_methods(Any)
-        .allow_headers(Any)
-        .allow_origin(AllowOrigin::list(cors_origins));
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::DELETE,
+            axum::http::Method::OPTIONS,
+            axum::http::Method::PATCH,
+        ])
+        .allow_headers([
+            axum::http::header::AUTHORIZATION,
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::ACCEPT,
+            axum::http::header::ORIGIN,
+            axum::http::header::COOKIE,
+        ])
+        .allow_origin(AllowOrigin::list(cors_origins))
+        .allow_credentials(true);
 
     // 创建速率限制层（每 IP 每分钟 60 请求）
     let rate_limiter = GovernorLayer {
@@ -141,6 +155,7 @@ pub async fn run() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(root_handler))
         .route("/health", get(health_handler))
+        .merge(routes::init::routes())
         .merge(routes::auth::routes())
         .merge(routes::posts::routes())
         .merge(routes::categories::routes())
@@ -149,7 +164,7 @@ pub async fn run() -> anyhow::Result<()> {
         .layer(middleware::from_fn(request_id_middleware))
         .layer(CompressionLayer::new())
         .layer(cors)
-        .layer(rate_limiter)
+        // .layer(rate_limiter)
         .layer(RequestBodyLimitLayer::new(10 * 1024 * 1024))
         .with_state(state);
 

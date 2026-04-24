@@ -1,24 +1,75 @@
-# Docker ignore
-**/target/
-**/node_modules/
-**/.git/
-**/.trellis/
-**/.kilo/
-**/.opencode/
-**/.agents/
-**/.claude/
-**/compat/
-**/include/
-**/admin/
-**/vendor/
-**/emlog_data/
-**/plog-rs/target/
-**/config/
-**/docker/
-**/docs/
-**/scripts/
-**/tests/
-*.log
-*.tmp
+# Docker 构建忽略文件
+
+# Git 文件
+.git
+.gitignore
+.gitmodules
+
+# 开发文件
 *.md
+!README.md
+docs/
+*.txt
+LICENSE
+
+# IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 构建产物
+target/
+dist/
+build/
+*.o
+*.so
+*.a
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 测试文件
+tests/
+test/
+*_test.rs
+*.test.js
+
+# 环境文件
+.env
+.env.local
+.env.production
+
+# 日志文件
+*.log
+logs/
+
+# 缓存文件
+.cache/
+*.cache
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 备份文件
 *.bak
+*.backup
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Docker 文件（避免递归）
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 其他不需要的文件
+*.sql
+*.sql.gz
+*.tar.gz
+*.zip

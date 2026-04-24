@@ -1,31 +1,61 @@
 # syntax=docker/dockerfile:1
 
-FROM rust:1.85-bookworm AS builder
+# =============================================================================
+# Plog API Dockerfile - 多阶段构建 (优化版)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 阶段 1: 构建阶段
+# -----------------------------------------------------------------------------
+FROM rust:1.88-bookworm AS builder
+
+# 设置 Cargo 使用国内源
+RUN mkdir -p /root/.cargo \
+    && echo '[source.crates-io]' > /root/.cargo/config.toml \
+    && echo 'replace-with = "rsproxy-sparse"' >> /root/.cargo/config.toml \
+    && echo '[source.rsproxy-sparse]' >> /root/.cargo/config.toml \
+    && echo 'registry = "sparse+https://rsproxy.cn/crates.io-index"' >> /root/.cargo/config.toml
+
 WORKDIR /build
 
+# 安装构建依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     libssl-dev \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY plog-rs/ /build/plog-rs/
-WORKDIR /build/plog-rs
+# 优先复制依赖文件以利用缓存
+COPY plog-rs/Cargo.toml plog-rs/Cargo.lock* /build/
+COPY plog-rs/crates /build/crates
+COPY plog-rs/migrations /build/migrations
+COPY plog-rs/src /build/src
 
-RUN cargo build -p plog-api --release
+# 构建应用
+RUN cargo build -p plog-server --release
 
+# -----------------------------------------------------------------------------
+# 阶段 2: 运行阶段
+# -----------------------------------------------------------------------------
 FROM debian:bookworm-slim AS runtime
+
 WORKDIR /app
 
+# 安装运行时依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3 \
+    curl \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --create-home --home-dir /app --shell /usr/sbin/nologin plog
 
-COPY --from=builder /build/plog-rs/target/release/plog-api /usr/local/bin/plog-api
+# 从构建阶段复制二进制文件
+COPY --from=builder /build/target/release/plog-api /usr/local/bin/plog-api
+
+# 复制配置文件
 COPY plog-rs/config/ /app/config/
 
+# 创建必要目录
 RUN mkdir -p /app/content/uploads \
     /app/content/plugins \
     /app/content/themes \
@@ -34,9 +64,11 @@ RUN mkdir -p /app/content/uploads \
     && chown -R plog:plog /app
 
 USER plog
+
 EXPOSE 8080
 
+# 健康检查
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -q --spider http://127.0.0.1:8080/health || exit 1
+    CMD curl -f http://127.0.0.1:8080/health || exit 1
 
 ENTRYPOINT ["/usr/local/bin/plog-api"]

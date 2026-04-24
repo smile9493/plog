@@ -1,0 +1,23 @@
+# syntax=docker/dockerfile:1
+
+# =============================================================================
+# Plog API 数据库初始化镜像
+# =============================================================================
+
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    default-mysql-client \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install argon2-cffi --break-system-packages \
+    && rm -rf /var/cache/pip
+
+WORKDIR /scripts
+COPY docker/init-db.sh /scripts/init-db.sh
+COPY docker/generate_hash.py /scripts/generate_hash.py
+
+RUN chmod +x /scripts/init-db.sh
+
+ENTRYPOINT ["/scripts/init-db.sh"]

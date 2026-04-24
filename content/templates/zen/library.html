@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书库 - Plog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">Plog</a>
+      <nav class="nav">
+        <a href="/" class="nav-link">文章</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link active">书库</a>
+        <a href="/mcp.html" class="nav-link">MCP</a>
+        <a href="/skill.html" class="nav-link">Skill</a>
+        <a href="/about.html" class="nav-link">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <h1 class="page-title">书库</h1>
+      <p class="page-subtitle">阅读记录与推荐书单</p>
+
+      <div class="about-section">
+        <h2>正在阅读</h2>
+        <div class="book-list">
+          <div class="book-item">
+            <div class="book-cover">📘</div>
+            <div class="book-info">
+              <div class="book-title">Rust 程序设计</div>
+              <div class="book-author">Steve Klabnik & Carol Nichols</div>
+              <div class="book-desc">Rust 官方推荐书籍，系统学习 Rust 语言的最佳入门读物。涵盖所有权、生命周期、并发等核心概念。</div>
+              <div class="book-rating">★★★★★</div>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover">📗</div>
+            <div class="book-info">
+              <div class="book-title">设计模式：可复用面向对象软件的基础</div>
+              <div class="book-author">Erich Gamma 等 (GoF)</div>
+              <div class="book-desc">软件工程经典之作，23 种设计模式的权威指南。理解设计模式是成为优秀架构师的必经之路。</div>
+              <div class="book-rating">★★★★☆</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>已读完</h2>
+        <div class="book-list">
+          <div class="book-item">
+            <div class="book-cover">📕</div>
+            <div class="book-info">
+              <div class="book-title">深入理解计算机系统</div>
+              <div class="book-author">Randal E. Bryant & David R. O'Hallaron</div>
+              <div class="book-desc">从程序员视角理解计算机系统，涵盖数据表示、汇编语言、存储器层次、链接、异常控制流等核心主题。</div>
+              <div class="book-rating">★★★★★</div>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover">📙</div>
+            <div class="book-info">
+              <div class="book-title">代码整洁之道</div>
+              <div class="book-author">Robert C. Martin</div>
+              <div class="book-desc">如何编写清晰、可维护的代码。从命名规范到函数设计，从注释到错误处理，全面提升代码质量。</div>
+              <div class="book-rating">★★★★☆</div>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover">📓</div>
+            <div class="book-info">
+              <div class="book-title">算法导论</div>
+              <div class="book-author">Thomas H. Cormen 等</div>
+              <div class="book-desc">算法领域的圣经，全面涵盖排序、图论、动态规划等核心算法，兼具深度和广度。</div>
+              <div class="book-rating">★★★★★</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>待读清单</h2>
+        <div class="book-list">
+          <div class="book-item">
+            <div class="book-cover">📔</div>
+            <div class="book-info">
+              <div class="book-title">Zero to Production in Rust</div>
+              <div class="book-author">Luca Palmieri</div>
+              <div class="book-desc">使用 Rust 构建生产级 Web 应用的实战指南，从零到部署的完整流程。</div>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover">📒</div>
+            <div class="book-info">
+              <div class="book-title">分布式系统：概念与设计</div>
+              <div class="book-author">George Coulouris 等</div>
+              <div class="book-desc">分布式系统领域的经典教材，涵盖分布式系统的基本概念、设计和实现。</div>
+            </div>
+          </div>
+          <div class="book-item">
+            <div class="book-cover">📔</div>
+            <div class="book-info">
+              <div class="book-title">编程珠玑</div>
+              <div class="book-author">Jon Bentley</div>
+              <div class="book-desc">通过精选的编程问题，展示优雅的算法设计和问题解决思路。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Plog. 保留所有权利。</p>
+    </div>
+  </footer>
+
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
+      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
+      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+</body>
+</html>

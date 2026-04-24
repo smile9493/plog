@@ -1,4 +1,4 @@
-# Plog CMS - 纯 Rust 项目
+# Plog CMS
 
 # ==================== Rust 构建 ====================
 plog-rs/target/
@@ -73,9 +73,6 @@ terminals/
 *.tar.gz
 *.rar
 
-# ==================== Rust 后端构建 ====================
-# (already covered by plog-rs/target/ and plog-rs/Cargo.lock above)
-
 # ==================== 敏感信息 ====================
 *.key
 *.pem
@@ -90,3 +87,13 @@ secrets/
 *.db
 *.sqlite
 *.sqlite3
+
+# ==================== 参考文件 ====================
+deepseek_html_*
+
+# ==================== Python缓存 ====================
+__pycache__/
+*.pyc
+
+# ==================== Cargo本地配置 ====================
+plog-rs/.cargo/

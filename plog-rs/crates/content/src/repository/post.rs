@@ -187,14 +187,13 @@ impl PostRepository {
 
         // 按状态筛选
         if let Some(st) = status {
-            query = query.filter(Column::Hide.eq(st));
-        } else {
-            // 默认只显示已发布的
-            query = query.filter(Column::Hide.eq("n"));
+            if st != "all" {
+                query = query.filter(Column::Hide.eq(st));
+            }
         }
 
-        // 按类型筛选（默认只显示博客）
-        query = query.filter(Column::Type.eq("blog"));
+        // 按类型筛选（默认显示所有类型）
+        // query = query.filter(Column::Type.eq("blog"));
 
         // 排序
         match order {

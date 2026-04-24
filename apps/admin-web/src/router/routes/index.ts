@@ -18,6 +18,15 @@ export const constantRoutes: RouteRecordRaw[] = [
       title: '404',
       hidden: true
     }
+  },
+  {
+    path: '/init',
+    name: 'Init',
+    component: () => import('@/views/init/index.vue'),
+    meta: {
+      title: '初始化',
+      hidden: true
+    }
   }
 ]
 
@@ -26,7 +35,6 @@ export const asyncRoutes: RouteRecordRaw[] = [
     path: '/',
     name: 'Layout',
     component: () => import('@/layouts/MainLayout.vue'),
-    redirect: '/dashboard',
     children: [
       {
         path: 'dashboard',
@@ -38,151 +46,72 @@ export const asyncRoutes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'post',
-        name: 'Post',
-        redirect: '/post/list',
+        path: 'website',
+        name: 'Website',
+        component: () => import('@/views/website/index.vue'),
+        meta: {
+          title: '前台网站',
+          icon: 'Monitor'
+        }
+      },
+      {
+        path: 'posts',
+        name: 'Posts',
+        component: () => import('@/views/posts/index.vue'),
         meta: {
           title: '文章管理',
           icon: 'Document'
-        },
-        children: [
-          {
-            path: 'list',
-            name: 'PostList',
-            component: () => import('@/views/post/list.vue'),
-            meta: {
-              title: '文章列表',
-              icon: 'List'
-            }
-          },
-          {
-            path: 'create',
-            name: 'PostCreate',
-            component: () => import('@/views/post/edit.vue'),
-            meta: {
-              title: '写文章',
-              icon: 'Edit',
-              hidden: true
-            }
-          },
-          {
-            path: 'edit/:id',
-            name: 'PostEdit',
-            component: () => import('@/views/post/edit.vue'),
-            meta: {
-              title: '编辑文章',
-              icon: 'Edit',
-              hidden: true
-            }
-          }
-        ]
+        }
       },
       {
-        path: 'category',
-        name: 'Category',
-        component: () => import('@/views/category/index.vue'),
+        path: 'categories',
+        name: 'Categories',
+        component: () => import('@/views/categories/index.vue'),
         meta: {
           title: '分类管理',
           icon: 'Folder'
         }
       },
       {
-        path: 'tag',
-        name: 'Tag',
-        component: () => import('@/views/tag/index.vue'),
+        path: 'tags',
+        name: 'Tags',
+        component: () => import('@/views/tags/index.vue'),
         meta: {
           title: '标签管理',
           icon: 'PriceTag'
         }
       },
       {
-        path: 'media',
-        name: 'Media',
-        component: () => import('@/views/media/index.vue'),
-        meta: {
-          title: '媒体库',
-          icon: 'Picture'
-        }
-      },
-      {
-        path: 'comment',
-        name: 'Comment',
-        component: () => import('@/views/comment/index.vue'),
+        path: 'comments',
+        name: 'Comments',
+        component: () => import('@/views/comments/index.vue'),
         meta: {
           title: '评论管理',
           icon: 'ChatDotSquare'
         }
       },
       {
-        path: 'plugin',
-        name: 'Plugin',
-        component: () => import('@/views/plugin/index.vue'),
+        path: 'users',
+        name: 'Users',
+        component: () => import('@/views/users/index.vue'),
+        meta: {
+          title: '用户管理',
+          icon: 'User'
+        }
+      },
+      {
+        path: 'plugins',
+        name: 'Plugins',
+        component: () => import('@/views/plugins/index.vue'),
         meta: {
           title: '插件管理',
           icon: 'Connection'
         }
       },
       {
-        path: 'theme',
-        name: 'Theme',
-        component: () => import('@/views/theme/index.vue'),
-        meta: {
-          title: '主题管理',
-          icon: 'Brush'
-        }
-      },
-      {
-        path: 'user',
-        name: 'User',
-        redirect: '/user/list',
-        meta: {
-          title: '用户管理',
-          icon: 'User'
-        },
-        children: [
-          {
-            path: 'list',
-            name: 'UserList',
-            component: () => import('@/views/user/list.vue'),
-            meta: {
-              title: '用户列表',
-              icon: 'UserFilled'
-            }
-          },
-          {
-            path: 'profile',
-            name: 'UserProfile',
-            component: () => import('@/views/user/profile.vue'),
-            meta: {
-              title: '个人中心',
-              icon: 'UserFilled',
-              hidden: true
-            }
-          }
-        ]
-      },
-      {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/role/index.vue'),
-        meta: {
-          title: '角色管理',
-          icon: 'Avatar'
-        }
-      },
-      {
-        path: 'permission',
-        name: 'Permission',
-        component: () => import('@/views/permission/index.vue'),
-        meta: {
-          title: '权限管理',
-          icon: 'Lock'
-        }
-      },
-      {
-        path: 'setting',
-        name: 'Setting',
-        component: () => import('@/views/setting/index.vue'),
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('@/views/settings/index.vue'),
         meta: {
           title: '系统设置',
           icon: 'Setting'

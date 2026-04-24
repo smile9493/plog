@@ -1,17 +1,16 @@
+# syntax=docker/dockerfile:1
+
 # =============================================================================
-# Frontend Dockerfile - 生产环境
-# 
-# 前台展示网站，用户访问的页面
+# Frontend Dockerfile - 前台展示网站 (优化版)
 # =============================================================================
 
-# 生产阶段
 FROM nginx:alpine
 
 # 复制主题模板到根目录
 COPY content/templates/zen/ /usr/share/nginx/html/
 
-# 复制静态资源
-COPY content/uploadfile/ /usr/share/nginx/html/uploads/
+# 创建上传目录
+RUN mkdir -p /usr/share/nginx/html/uploads
 
 # 复制 Nginx 配置
 COPY docker/nginx.frontend.conf /etc/nginx/conf.d/default.conf
@@ -20,7 +19,6 @@ COPY docker/nginx.frontend.conf /etc/nginx/conf.d/default.conf
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://127.0.0.1/ || exit 1
 
-# 暴露端口
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]

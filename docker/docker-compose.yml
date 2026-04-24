@@ -28,11 +28,30 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
     restart: unless-stopped
     networks:
       - plog-network
 
-  # Rust API 服务（使用宿主机编译好的二进制）
+  # 数据库初始化服务
+  db-init:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.init
+    container_name: plog-db-init
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-plog}
+      DB_USER: ${MYSQL_USER:-plog}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-plog123}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - plog-network
+
+  # Rust API 服务
   api:
     build:
       context: ..
@@ -45,12 +64,6 @@ services:
       PLOG__SERVER__HOST: 0.0.0.0
       PLOG__SERVER__PORT: 8080
       RUST_LOG: ${RUST_LOG:-info}
-      HTTP_PROXY: ""
-      HTTPS_PROXY: ""
-      http_proxy: ""
-      https_proxy: ""
-      NO_PROXY: "localhost,127.0.0.1,mysql"
-      no_proxy: "localhost,127.0.0.1,mysql"
     ports:
       - "8080:8080"
     depends_on:
@@ -72,13 +85,10 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.admin-web
     container_name: plog-admin-web
-    environment:
-      HTTP_PROXY: ""
-      HTTPS_PROXY: ""
-      http_proxy: ""
-      https_proxy: ""
     ports:
       - "8081:80"
+    depends_on:
+      - api
     restart: unless-stopped
     networks:
       - plog-network
@@ -89,15 +99,12 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.frontend
     container_name: plog-frontend
-    environment:
-      HTTP_PROXY: ""
-      HTTPS_PROXY: ""
-      http_proxy: ""
-      https_proxy: ""
     ports:
       - "8082:80"
     volumes:
       - frontend_uploads:/usr/share/nginx/html/uploads
+    depends_on:
+      - api
     restart: unless-stopped
     networks:
       - plog-network

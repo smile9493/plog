@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// 分类模型
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "sort")]
+#[sea_orm(table_name = "category")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub sid: i32,

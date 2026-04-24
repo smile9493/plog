@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP - Plog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">Plog</a>
+      <nav class="nav">
+        <a href="/" class="nav-link">文章</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link">书库</a>
+        <a href="/mcp.html" class="nav-link active">MCP</a>
+        <a href="/skill.html" class="nav-link">Skill</a>
+        <a href="/about.html" class="nav-link">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container-wide">
+      <h1 class="page-title">MCP</h1>
+      <p class="page-subtitle">Model Context Protocol — 连接 AI 与数据的标准协议</p>
+
+      <div class="about-section">
+        <h2>什么是 MCP？</h2>
+        <p>MCP (Model Context Protocol) 是一个开放协议，为 AI 模型提供与外部数据源和工具交互的标准化方式。它让 AI 助手能够安全地连接到各种数据源、API 和工具，实现更强大的功能。</p>
+        <p>简单来说，MCP 就像是 AI 的"USB 接口"——一个统一的连接标准，让 AI 能够即插即用地访问各种资源。</p>
+      </div>
+
+      <div class="about-section">
+        <h2>核心概念</h2>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">🔌</div>
+            <div class="card-title">Server</div>
+            <div class="card-desc">MCP 服务端，提供数据源和工具的访问能力。每个 Server 暴露特定的能力（资源、提示、工具）。</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📱</div>
+            <div class="card-title">Client</div>
+            <div class="card-desc">MCP 客户端，运行在 AI 应用中，负责与 Server 建立连接并协商能力。</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🛠️</div>
+            <div class="card-title">Tools</div>
+            <div class="card-desc">Server 暴露的可调用函数，AI 模型可以通过 Tool 执行操作、查询数据。</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📦</div>
+            <div class="card-title">Resources</div>
+            <div class="card-desc">Server 提供的数据资源，如文件、数据库记录、API 响应等。</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">💬</div>
+            <div class="card-title">Prompts</div>
+            <div class="card-desc">预定义的提示模板，帮助用户快速完成常见任务。</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔄</div>
+            <div class="card-title">Transport</div>
+            <div class="card-desc">通信传输层，支持 stdio 和 SSE 两种模式，灵活适配不同场景。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>MCP 生态</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🗄️</div>
+              <div class="feature-name">数据库 MCP</div>
+            </div>
+            <div class="feature-desc">连接 MySQL、PostgreSQL、SQLite 等数据库，让 AI 直接查询和操作数据。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">可用</span>
+              <span>官方支持</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">📁</div>
+              <div class="feature-name">文件系统 MCP</div>
+            </div>
+            <div class="feature-desc">安全地读写本地文件系统，支持文件搜索、创建、编辑等操作。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">可用</span>
+              <span>官方支持</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🌐</div>
+              <div class="feature-name">Web 搜索 MCP</div>
+            </div>
+            <div class="feature-desc">集成搜索引擎，让 AI 能够实时搜索互联网信息。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">可用</span>
+              <span>社区支持</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🐙</div>
+              <div class="feature-name">GitHub MCP</div>
+            </div>
+            <div class="feature-desc">操作 GitHub 仓库、Issue、PR，实现 AI 辅助代码管理。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">可用</span>
+              <span>官方支持</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">📝</div>
+              <div class="feature-name">Notion MCP</div>
+            </div>
+            <div class="feature-desc">读写 Notion 工作空间，管理文档和数据库。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">开发中</span>
+              <span>社区支持</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🎨</div>
+              <div class="feature-name">Figma MCP</div>
+            </div>
+            <div class="feature-desc">读取 Figma 设计稿，AI 辅助前端开发。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">开发中</span>
+              <span>社区支持</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>快速开始</h2>
+        <div class="post-content">
+          <p>1. 安装 MCP SDK：</p>
+          <pre><code>npm install @modelcontextprotocol/sdk</code></pre>
+          <p>2. 创建一个简单的 MCP Server：</p>
+          <pre><code>import { McpServer } from '@modelcontextprotocol/sdk/server.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+const server = new McpServer({ name: 'my-server', version: '1.0.0' });
+
+server.tool('hello', { name: z.string() }, async ({ name }) => ({
+  content: [{ type: 'text', text: `Hello, ${name}!` }]
+}));
+
+const transport = new StdioServerTransport();
+await server.connect(transport);</code></pre>
+          <p>3. 在 AI 客户端中配置 MCP Server 连接即可使用。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Plog. 保留所有权利。</p>
+    </div>
+  </footer>
+
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
+      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
+      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+</body>
+</html>

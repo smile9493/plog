@@ -1,226 +1,282 @@
 <template>
-  <el-container class="main-layout">
-    <!-- 侧边栏 -->
-    <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar">
+  <div class="layout-container">
+    <aside class="sidebar">
       <div class="logo">
-        <img src="@/assets/logo.png" alt="logo" v-if="!isCollapse" />
-        <span v-if="!isCollapse">Plog Admin</span>
+        <span class="logo-icon">📝</span>
+        <span class="logo-text">Plog 管理</span>
       </div>
-      <el-menu
-        :default-active="activeMenu"
-        :collapse="isCollapse"
-        :unique-opened="true"
-        router
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409eff"
-      >
-        <sidebar-item
-          v-for="route in routes"
-          :key="route.path"
-          :item="route"
-          base-path="/"
-        />
-      </el-menu>
-    </el-aside>
-
-    <el-container>
-      <!-- 顶部导航栏 -->
-      <el-header class="header">
-        <div class="header-left">
-          <el-icon class="collapse-icon" @click="toggleCollapse">
-            <Expand v-if="isCollapse" />
-            <Fold v-else />
-          </el-icon>
-          <breadcrumb />
-        </div>
-        <div class="header-right">
-          <el-dropdown @command="handleCommand">
-            <div class="user-info">
-              <el-avatar :size="32" :src="userStore.avatar">
-                <el-icon><UserFilled /></el-icon>
-              </el-avatar>
-              <span class="username">{{ userStore.nickname }}</span>
-            </div>
+      
+      <nav class="nav-menu">
+        <router-link
+          v-for="item in navItems"
+          :key="item.path"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: isActive(item.path) }"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.name }}</span>
+        </router-link>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="theme-switcher">
+          <el-dropdown trigger="click" @command="handleThemeChange">
+            <span class="theme-trigger">
+              <span class="theme-icon">🎨</span>
+              <span class="theme-text">{{ currentThemeName }}</span>
+            </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">
-                  <el-icon><User /></el-icon>
-                  个人中心
-                </el-dropdown-item>
-                <el-dropdown-item command="setting">
-                  <el-icon><Setting /></el-icon>
-                  系统设置
-                </el-dropdown-item>
-                <el-dropdown-item divided command="logout">
-                  <el-icon><SwitchButton /></el-icon>
-                  退出登录
+                <el-dropdown-item
+                  v-for="theme in themes"
+                  :key="theme.key"
+                  :command="theme.key"
+                  :disabled="themeStore.currentTheme === theme.key"
+                >
+                  {{ theme.name }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
         </div>
-      </el-header>
-
-      <!-- 主内容区 -->
-      <el-main class="main">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
-      </el-main>
-    </el-container>
-  </el-container>
+        
+        <div class="user-info">
+          <el-dropdown trigger="click" @command="handleUserCommand">
+            <span class="user-trigger">
+              <span class="user-avatar">{{ userStore.user?.nickname?.[0] || 'U' }}</span>
+              <span class="user-name">{{ userStore.user?.nickname || '用户' }}</span>
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="profile">个人设置</el-dropdown-item>
+                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+      </div>
+    </aside>
+    
+    <main class="main-content">
+      <router-view />
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { Expand, Fold, UserFilled, User, Setting, SwitchButton } from '@element-plus/icons-vue'
-import { useUserStore } from '@/store'
-import SidebarItem from './components/SidebarItem.vue'
-import Breadcrumb from './components/Breadcrumb.vue'
+import { useUserStore } from '@/store/modules/user'
+import { useThemeStore } from '@/store/modules/theme'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 
-// 侧边栏折叠状态
-const isCollapse = ref(false)
+const navItems = [
+  { path: '/dashboard', name: '仪表盘', icon: '📊' },
+  { path: '/website', name: '前台网站', icon: '🌐' },
+  { path: '/posts', name: '文章管理', icon: '📄' },
+  { path: '/categories', name: '分类管理', icon: '📂' },
+  { path: '/tags', name: '标签管理', icon: '🏷️' },
+  { path: '/comments', name: '评论管理', icon: '💬' },
+  { path: '/users', name: '用户管理', icon: '👥' },
+  { path: '/plugins', name: '插件管理', icon: '🔌' },
+  { path: '/settings', name: '系统设置', icon: '⚙️' }
+]
 
-// 当前激活菜单
-const activeMenu = computed(() => {
-  const { meta, path } = route
-  if (meta.activeMenu) {
-    return meta.activeMenu as string
-  }
-  return path
-})
+const themes = computed(() => themeStore.getThemes())
+const currentThemeName = computed(() => themeStore.themeConfig.name)
 
-// 路由列表
-const routes = computed(() => {
-  // 获取根路由的children
-  const rootRoute = router.getRoutes().find(r => r.path === '/' && r.name === 'Layout')
-  return rootRoute?.children || []
-})
-
-// 切换折叠状态
-const toggleCollapse = () => {
-  isCollapse.value = !isCollapse.value
+const isActive = (path: string) => {
+  return route.path === path || route.path.startsWith(path + '/')
 }
 
-// 处理下拉菜单命令
-const handleCommand = async (command: string) => {
-  switch (command) {
-    case 'profile':
-      router.push('/user/profile')
-      break
-    case 'setting':
-      router.push('/setting')
-      break
-    case 'logout':
-      try {
-        await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-        await userStore.logout()
-        router.push('/login')
-        ElMessage.success('已退出登录')
-      } catch (error) {
-        // 取消退出
-      }
-      break
+const handleThemeChange = (themeName: string) => {
+  themeStore.setTheme(themeName as any)
+  ElMessage.success(`已切换到${themeStore.themeConfig.name}主题`)
+}
+
+const handleUserCommand = async (command: string) => {
+  if (command === 'logout') {
+    try {
+      await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+      
+      await userStore.logout()
+      ElMessage.success('已退出登录')
+      router.push('/login')
+    } catch {
+      // 用户取消
+    }
+  } else if (command === 'profile') {
+    router.push('/profile')
   }
 }
 </script>
 
-<style scoped lang="scss">
-.main-layout {
-  height: 100vh;
+<style scoped>
+.layout-container {
+  display: flex;
+  min-height: 100vh;
 }
 
 .sidebar {
-  background-color: #304156;
-  transition: width 0.3s;
-  overflow: hidden;
-
-  .logo {
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 20px;
-    font-weight: bold;
-    background-color: #2b3a4d;
-
-    img {
-      width: 32px;
-      height: 32px;
-      margin-right: 8px;
-    }
-  }
-
-  .el-menu {
-    border-right: none;
-  }
+  width: 240px;
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  padding: 24px 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.header {
+.logo {
+  padding: 0 20px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background-color: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  padding: 0 20px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 12px;
+}
 
-  .header-left {
-    display: flex;
-    align-items: center;
+.logo-icon {
+  font-size: 20px;
+}
 
-    .collapse-icon {
-      font-size: 20px;
-      cursor: pointer;
-      margin-right: 20px;
-      color: #606266;
+.nav-menu {
+  flex: 1;
+}
 
-      &:hover {
-        color: #409eff;
-      }
-    }
+.nav-item {
+  padding: 12px 20px;
+  margin: 4px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.active {
+  background: rgba(99, 102, 241, 0.3);
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-icon {
+  font-size: 16px;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.theme-switcher {
+  margin-bottom: 12px;
+}
+
+.theme-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.15s;
+}
+
+.theme-trigger:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.theme-icon {
+  font-size: 16px;
+}
+
+.user-info {
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.user-trigger:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-size: 14px;
+  color: #fff;
+}
+
+.main-content {
+  flex: 1;
+  padding: 24px;
+  background: var(--bg);
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 64px;
+    overflow: hidden;
   }
-
-  .header-right {
-    .user-info {
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-
-      .username {
-        margin-left: 8px;
-        color: #606266;
-      }
-    }
+  
+  .logo-text,
+  .nav-text,
+  .theme-text,
+  .user-name {
+    display: none;
   }
-}
-
-.main {
-  background-color: #f0f2f5;
-  padding: 20px;
-}
-
-// 过渡动画
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+  
+  .nav-item {
+    justify-content: center;
+    padding: 12px;
+  }
+  
+  .user-trigger {
+    justify-content: center;
+  }
 }
 </style>

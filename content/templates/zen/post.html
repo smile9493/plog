@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ post.title }} - {{ site.name }}</title>
+  <title>文章 - Plog</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,74 +12,103 @@
 <body>
   <header class="site-header">
     <div class="container">
-      <a href="/" class="logo">{{ site.name }}</a>
+      <a href="/" class="logo">Plog</a>
       <nav class="nav">
-        <a href="/" class="nav-link">文章</a>
-        <a href="/categories" class="nav-link">分类</a>
-        <a href="/about" class="nav-link">关于</a>
+        <a href="/" class="nav-link active">文章</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link">书库</a>
+        <a href="/mcp.html" class="nav-link">MCP</a>
+        <a href="/skill.html" class="nav-link">Skill</a>
+        <a href="/about.html" class="nav-link">关于</a>
       </nav>
     </div>
   </header>
-
   <main class="main">
     <div class="container">
-      <article class="post">
-        <header class="post-header">
-          <time class="post-date">{{ format_date post.created_at }}</time>
-          <h1 class="post-title">{{ post.title }}</h1>
-          <div class="post-meta">
-            {{#if post.category}}
-            <span class="post-category">{{ post.category.name }}</span>
-            {{/if}}
-            {{#each post.tags}}
-            <span class="post-tag">#{{ name }}</span>
-            {{/each}}
-          </div>
-        </header>
-
-        {{#if post.cover}}
-        <figure class="post-cover">
-          <img src="{{ post.cover }}" alt="{{ post.title }}">
-        </figure>
-        {{/if}}
-
-        <div class="post-content">
-          {{{ post.content }}}
-        </div>
-
-        <footer class="post-footer">
-          <div class="post-nav">
-            {{#if post.prev}}
-            <a href="{{ post.prev.url }}" class="nav-prev">← {{ post.prev.title }}</a>
-            {{/if}}
-            {{#if post.next}}
-            <a href="{{ post.next.url }}" class="nav-next">{{ post.next.title }} →</a>
-            {{/if}}
-          </div>
-        </footer>
+      <article class="post" id="post-content">
+        <div class="loading">加载中...</div>
       </article>
-
-      <section class="comments">
-        <h3 class="comments-title">评论</h3>
-        <div class="comments-list">
-          {{#each comments}}
-          <div class="comment">
-            <div class="comment-header">
-              <span class="comment-author">{{ author }}</span>
-              <time class="comment-date">{{ format_date created_at }}</time>
-            </div>
-            <div class="comment-content">{{ content }}</div>
-          </div>
-          {{/each}}
-        </div>
-      </section>
+      <a href="/" class="back-link">&larr; 返回文章列表</a>
     </div>
   </main>
-
   <footer class="site-footer">
     <div class="container">
-      <p>&copy; {{ current_year }} {{ site.name }}. 保留所有权利。</p>
+      <p>&copy; 2026 Plog. 保留所有权利。</p>
     </div>
   </footer>
+
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
+      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
+      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+  <script>
+    function getQueryParam(name) {
+      var params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+    function formatTimestamp(ts) {
+      if (!ts) return '';
+      var d = new Date(ts * 1000);
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function escapeHtml(str) {
+      if (!str) return '';
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+    function renderMarkdown(text) {
+      if (!text) return '';
+      var html = text
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/```[\s\S]*?```/g, function(m) { return '<pre><code>' + m.replace(/```\w*\n?/g,'') + '</code></pre>'; })
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>');
+      return '<p>' + html + '</p>';
+    }
+    var postId = getQueryParam('id');
+    if (postId) {
+      fetch('/api/posts/' + postId)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success && data.data) {
+            var post = data.data;
+            document.title = post.title + ' - Plog';
+            var html = '<header class="post-header">';
+            html += '<time class="post-date">' + formatTimestamp(post.date) + '</time>';
+            html += '<h1 class="post-title">' + escapeHtml(post.title) + '</h1>';
+            html += '<div class="post-meta">';
+            html += '<span class="post-views">' + (post.views || 0) + ' 次浏览</span>';
+            html += '</div></header>';
+            html += '<div class="post-content">' + renderMarkdown(post.content) + '</div>';
+            document.getElementById('post-content').innerHTML = html;
+          } else {
+            document.getElementById('post-content').innerHTML = '<p>文章未找到</p>';
+          }
+        })
+        .catch(function() {
+          document.getElementById('post-content').innerHTML = '<p>加载失败</p>';
+        });
+    } else {
+      document.getElementById('post-content').innerHTML = '<p>缺少文章ID</p>';
+    }
+  </script>
 </body>
 </html>

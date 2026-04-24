@@ -4,7 +4,7 @@ import type { User, LoginForm } from '@/types'
 export const authApi = {
   // 用户登录
   login(data: LoginForm) {
-    return request.post<{ token: string; user: User }>('/auth/login', data)
+    return request.post<{ user: User; expires_in: number }>('/auth/login', data)
   },
   
   // 用户登出

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Skill - Plog</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="logo">Plog</a>
+      <nav class="nav">
+        <a href="/" class="nav-link">文章</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link">书库</a>
+        <a href="/mcp.html" class="nav-link">MCP</a>
+        <a href="/skill.html" class="nav-link active">Skill</a>
+        <a href="/about.html" class="nav-link">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container-wide">
+      <h1 class="page-title">Agent Skill</h1>
+      <p class="page-subtitle">AI Agent 技能定义与能力扩展框架</p>
+
+      <div class="about-section">
+        <h2>什么是 Agent Skill？</h2>
+        <p>Agent Skill 是 AI Agent 的能力单元，定义了 Agent 可以执行的具体操作和交互方式。每个 Skill 封装了一组相关的功能，包括输入输出规范、执行逻辑和上下文管理。通过组合不同的 Skill，Agent 能够完成复杂的任务流程。</p>
+        <p>Skill 与 MCP 的关系：MCP 提供数据通道，Skill 定义行为模式。两者配合，让 Agent 既有"手"（MCP），也有"脑"（Skill）。</p>
+      </div>
+
+      <div class="about-section">
+        <h2>核心 Skill 类型</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🔍</div>
+              <div class="feature-name">搜索 Skill</div>
+            </div>
+            <div class="feature-desc">信息检索与知识查找能力。支持多源搜索、结果排序、相关性判断，为 Agent 提供实时信息获取能力。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">核心</span>
+              <span>必需</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">📝</div>
+              <div class="feature-name">创作 Skill</div>
+            </div>
+            <div class="feature-desc">内容生成与编辑能力。包括文章撰写、代码生成、文档编辑、格式转换等，是 Agent 的核心产出能力。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">核心</span>
+              <span>必需</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🧠</div>
+              <div class="feature-name">推理 Skill</div>
+            </div>
+            <div class="feature-desc">逻辑推理与决策能力。支持多步推理、条件判断、策略选择，让 Agent 能够处理需要深度思考的任务。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">核心</span>
+              <span>必需</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">💬</div>
+              <div class="feature-name">对话 Skill</div>
+            </div>
+            <div class="feature-desc">自然语言交互能力。支持多轮对话、意图理解、上下文记忆、情感识别，实现流畅的人机交流。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">核心</span>
+              <span>必需</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>扩展 Skill</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">💻</div>
+              <div class="feature-name">代码 Skill</div>
+            </div>
+            <div class="feature-desc">代码编写、审查、调试与重构能力。支持多语言编程、项目结构理解、依赖分析、测试生成。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">扩展</span>
+              <span>开发场景</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">📊</div>
+              <div class="feature-name">数据 Skill</div>
+            </div>
+            <div class="feature-desc">数据分析与可视化能力。支持数据清洗、统计分析、图表生成、趋势预测，辅助数据驱动决策。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">扩展</span>
+              <span>分析场景</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🌐</div>
+              <div class="feature-name">浏览器 Skill</div>
+            </div>
+            <div class="feature-desc">网页浏览与操作能力。支持页面导航、内容提取、表单填写、截图，让 Agent 能够操作 Web 应用。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">扩展</span>
+              <span>自动化场景</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">📁</div>
+              <div class="feature-name">文件 Skill</div>
+            </div>
+            <div class="feature-desc">文件系统操作能力。支持文件读写、目录管理、格式转换、批量处理，是 Agent 与本地系统交互的基础。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">扩展</span>
+              <span>系统场景</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🔗</div>
+              <div class="feature-name">API Skill</div>
+            </div>
+            <div class="feature-desc">外部 API 调用能力。支持 REST/GraphQL 请求、认证管理、响应解析、错误处理，连接第三方服务。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">扩展</span>
+              <span>集成场景</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🎨</div>
+              <div class="feature-name">设计 Skill</div>
+            </div>
+            <div class="feature-desc">UI/UX 设计辅助能力。支持设计稿分析、组件推荐、样式生成、可访问性检查。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-plan">规划中</span>
+              <span>设计场景</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>Skill 架构</h2>
+        <div class="about-section">
+          <p>一个标准的 Agent Skill 由以下部分组成：</p>
+          <ul>
+            <li>📋 <strong>Schema</strong> — 输入输出的 JSON Schema 定义，描述 Skill 接受的参数和返回的结果</li>
+            <li>⚙️ <strong>Handler</strong> — 执行逻辑的实现，接收输入参数，调用底层能力，返回执行结果</li>
+            <li>📌 <strong>Context</strong> — 上下文管理，维护 Skill 执行过程中的状态、记忆和环境信息</li>
+            <li>🛡️ <strong>Guard</strong> — 安全守卫，校验输入、限制权限、防止越权操作</li>
+            <li>📊 <strong>Telemetry</strong> — 可观测性，记录执行日志、性能指标和错误信息</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h2>Skill 与 MCP 协作</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🤝</div>
+              <div class="feature-name">Skill + MCP Server</div>
+            </div>
+            <div class="feature-desc">Skill 通过 MCP 协议调用外部 Server 提供的工具和资源。例如"代码 Skill"通过 MCP 调用 GitHub Server 操作仓库。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-active">已实现</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🔄</div>
+              <div class="feature-name">Skill 编排</div>
+            </div>
+            <div class="feature-desc">多个 Skill 可以串联或并联执行，形成复杂的工作流。编排器负责调度、错误恢复和结果聚合。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-dev">开发中</span>
+            </div>
+          </div>
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon">🧩</div>
+              <div class="feature-name">Skill 市场</div>
+            </div>
+            <div class="feature-desc">社区共享的 Skill 注册中心，开发者可以发布、发现和复用经过验证的 Agent Skill。</div>
+            <div class="feature-meta">
+              <span class="status-badge status-plan">规划中</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Plog. 保留所有权利。</p>
+    </div>
+  </footer>
+
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
+      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
+      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
+</body>
+</html>

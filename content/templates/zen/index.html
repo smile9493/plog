@@ -15,29 +15,32 @@
       <a href="/" class="logo">Plog</a>
       <nav class="nav">
         <a href="/" class="nav-link active">文章</a>
-        <a href="/categories" class="nav-link">分类</a>
-        <a href="/about" class="nav-link">关于</a>
+        <a href="/categories.html" class="nav-link">分类</a>
+        <a href="/nav.html" class="nav-link">导航</a>
+        <a href="/library.html" class="nav-link">书库</a>
+        <a href="/mcp.html" class="nav-link">MCP</a>
+        <a href="/skill.html" class="nav-link">Skill</a>
+        <a href="/about.html" class="nav-link">关于</a>
       </nav>
     </div>
   </header>
 
   <main class="main">
     <div class="container">
+      <h1 class="page-title">文章</h1>
+      <p class="page-subtitle">记录思考，分享知识</p>
+
       <section class="posts" id="posts">
-        <article class="post-card">
-          <a href="#" class="post-link">
-            <time class="post-date">2026-04-02</time>
-            <h2 class="post-title">欢迎来到 Plog</h2>
-            <p class="post-excerpt">这是一个基于 Rust 构建的现代化博客系统。简洁、快速、专注于内容创作。</p>
-            <div class="post-meta">
-              <span class="post-category">公告</span>
-            </div>
-          </a>
-        </article>
       </section>
 
       <div class="empty-state" id="empty-state" style="display: none;">
         <p>暂无文章</p>
+      </div>
+
+      <div class="pagination" id="pagination" style="display: none;">
+        <button id="prevBtn" onclick="loadPage(currentPage - 1)">上一页</button>
+        <span id="pageInfo"></span>
+        <button id="nextBtn" onclick="loadPage(currentPage + 1)">下一页</button>
       </div>
     </div>
   </main>
@@ -48,49 +51,146 @@
     </div>
   </footer>
 
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-toggle" id="themeToggle" title="切换主题">
+      <svg class="theme-icon sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    <div class="theme-menu" id="themeMenu">
+      <button class="theme-option" data-theme="light">
+        <span class="theme-preview light"></span>
+        <span>明亮</span>
+      </button>
+      <button class="theme-option" data-theme="dark">
+        <span class="theme-preview dark"></span>
+        <span>暗色</span>
+      </button>
+      <button class="theme-option" data-theme="sepia">
+        <span class="theme-preview sepia"></span>
+        <span>护眼</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="theme.js"></script>
   <script>
-    // 从 API 获取文章列表
-    async function fetchPosts() {
-      try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        
-        if (data.success && data.data && data.data.items && data.data.items.length > 0) {
-          renderPosts(data.data.items);
-        }
-      } catch (e) {
-        console.log('API not available, using static content');
-      }
-    }
-
-    function renderPosts(posts) {
-      const container = document.getElementById('posts');
-      container.innerHTML = posts.map(post => `
-        <article class="post-card">
-          <a href="/post/${post.id}" class="post-link">
-            <time class="post-date">${formatDate(post.created_at)}</time>
-            <h2 class="post-title">${escapeHtml(post.title)}</h2>
-            <p class="post-excerpt">${escapeHtml(post.excerpt || '')}</p>
-            <div class="post-meta">
-              ${post.category ? `<span class="post-category">${escapeHtml(post.category.name)}</span>` : ''}
-            </div>
-          </a>
-        </article>
-      `).join('');
-    }
-
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      return date.toISOString().split('T')[0];
-    }
+    var categories = [];
+    var currentPage = 1;
+    var totalPages = 1;
 
     function escapeHtml(str) {
-      const div = document.createElement('div');
+      if (!str) return '';
+      var div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
     }
 
-    // 页面加载时获取文章
+    function formatTimestamp(ts) {
+      if (!ts) return '';
+      var d = new Date(ts * 1000);
+      var y = d.getFullYear();
+      var m = String(d.getMonth() + 1).padStart(2, '0');
+      var day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    function getCategoryName(sortid) {
+      for (var i = 0; i < categories.length; i++) {
+        if (categories[i].sid === sortid) {
+          return categories[i].sortname;
+        }
+      }
+      return '';
+    }
+
+    function fetchCategories() {
+      fetch('/api/categories')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success && data.data) {
+            categories = data.data;
+          }
+        })
+        .catch(function() {});
+    }
+
+    function fetchPosts() {
+      fetch('/api/posts?status=n&page=' + currentPage + '&per_page=10')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data.success && data.data && data.data.items && data.data.items.length > 0) {
+            renderPosts(data.data.items);
+            var pg = data.data.pagination || {};
+            totalPages = pg.total_pages || 1;
+            currentPage = pg.page || 1;
+            renderPagination(pg);
+          } else {
+            document.getElementById('posts').innerHTML = '';
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('pagination').style.display = 'none';
+          }
+        })
+        .catch(function() {
+          document.getElementById('empty-state').style.display = 'block';
+        });
+    }
+
+    function renderPosts(posts) {
+      var container = document.getElementById('posts');
+      var html = '';
+      posts.forEach(function(post) {
+        var dateStr = formatTimestamp(post.date);
+        var catName = getCategoryName(post.sortid);
+        var excerpt = post.excerpt || '';
+        if (!excerpt && post.content) {
+          excerpt = post.content.replace(/[#*`\n]/g, ' ').substring(0, 120) + '...';
+        }
+        html += '<article class="post-card">';
+        html += '<a href="/post.html?id=' + post.gid + '" class="post-link">';
+        html += '<time class="post-date">' + escapeHtml(dateStr) + '</time>';
+        html += '<h2 class="post-title">' + escapeHtml(post.title) + '</h2>';
+        html += '<p class="post-excerpt">' + escapeHtml(excerpt) + '</p>';
+        if (catName) {
+          html += '<div class="post-meta"><span class="post-category">' + escapeHtml(catName) + '</span></div>';
+        }
+        html += '</a></article>';
+      });
+      container.innerHTML = html;
+      document.getElementById('empty-state').style.display = 'none';
+    }
+
+    function renderPagination(pg) {
+      var paginationEl = document.getElementById('pagination');
+      if (!pg || pg.total <= pg.per_page) {
+        paginationEl.style.display = 'none';
+        return;
+      }
+      paginationEl.style.display = 'flex';
+      document.getElementById('prevBtn').disabled = currentPage <= 1;
+      document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+      document.getElementById('pageInfo').textContent = currentPage + ' / ' + totalPages;
+    }
+
+    function loadPage(page) {
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      fetchPosts();
+      window.scrollTo(0, 0);
+    }
+
+    fetchCategories();
     fetchPosts();
   </script>
 </body>

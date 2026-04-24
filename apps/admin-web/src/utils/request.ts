@@ -10,6 +10,7 @@ NProgress.configure({ showSpinner: false })
 const service: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_PREFIX || '/api',
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
   }
@@ -42,17 +43,14 @@ service.interceptors.response.use(
     
     const { data } = response
     
-    // 如果返回 success: true，说明接口请求成功
     if (data.success === true) {
-      return data.data
+      return data
     }
     
-    // 如果返回的状态码为 200 或 0，说明接口请求成功
     if (data.code === 200 || data.code === 0) {
-      return data.data
+      return data
     }
     
-    // 其他状态码静默处理
     return Promise.reject(new Error(data.message || data.error?.message || '请求失败'))
   },
   (error: AxiosError) => {

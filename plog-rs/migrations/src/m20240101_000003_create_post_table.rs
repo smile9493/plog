@@ -17,7 +17,7 @@ impl MigrationTrait for Migration {
                     .col(string(Post::Title).string_len(255).not_null())
                     .col(text(Post::Content).not_null())
                     .col(text_null(Post::Excerpt))
-                    .col(integer(Post::Author).not_null())
+                    .col(integer_null(Post::Author))
                     .col(integer(Post::Sortid).not_null().default(0))
                     .col(big_integer(Post::Date).not_null())
                     .col(string(Post::Hide).string_len(1).not_null().default("n"))

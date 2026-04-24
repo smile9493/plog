@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 /// 文章模型
 #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "blog")]
+#[sea_orm(table_name = "post")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub gid: i32,

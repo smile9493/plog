@@ -162,7 +162,7 @@ async fn create_post(
         author: sea_orm::Set(user.user_id),
         sortid: sea_orm::Set(payload.sortid.unwrap_or(0)),
         date: sea_orm::Set(now),
-        hide: sea_orm::Set(payload.hide.unwrap_or_else(|| "y".to_string())),
+        hide: sea_orm::Set(payload.hide.unwrap_or_else(|| "n".to_string())),
         r#type: sea_orm::Set(payload.r#type.unwrap_or_else(|| "blog".to_string())),
         views: sea_orm::Set(0),
         comnum: sea_orm::Set(0),

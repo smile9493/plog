@@ -1,0 +1,15 @@
+{
+  "registry-mirrors": [
+    "https://docker.1panel.dev",
+    "https://docker.1ms.run",
+    "https://mirror.ccs.tencentyun.com",
+    "https://registry.docker-cn.com"
+  ],
+  "max-concurrent-downloads": 3,
+  "max-concurrent-uploads": 5,
+  "debug": false,
+  "log-level": "warn",
+  "storage-driver": "overlay2",
+  "live-restore": true,
+  "userland-proxy": false
+}

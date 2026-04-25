@@ -1,0 +1,13 @@
+[package]
+name = "plog-core"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Core - Minimal core types and error handling"
+license = "MIT"
+
+[dependencies]
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+config = { workspace = true }

@@ -1,0 +1,14 @@
+[package]
+name = "plog-plugin"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Plugin Extension"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../../packages/plog-core" }
+plog-shared = { path = "../../packages/plog-shared" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+toml = { workspace = true }

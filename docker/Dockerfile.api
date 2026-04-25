@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # =============================================================================
-# Plog API Dockerfile - 多阶段构建 (优化版)
+# Plog API Dockerfile - 微内核架构版本
 # =============================================================================
 
 # -----------------------------------------------------------------------------
@@ -10,13 +10,22 @@
 FROM rust:1.88-bookworm AS builder
 
 # 设置 Cargo 使用国内源
-RUN mkdir -p /root/.cargo \
-    && echo '[source.crates-io]' > /root/.cargo/config.toml \
-    && echo 'replace-with = "rsproxy-sparse"' >> /root/.cargo/config.toml \
-    && echo '[source.rsproxy-sparse]' >> /root/.cargo/config.toml \
-    && echo 'registry = "sparse+https://rsproxy.cn/crates.io-index"' >> /root/.cargo/config.toml
+RUN mkdir -p /root/.cargo && \
+    cat > /root/.cargo/config.toml << 'EOF'
+[source.crates-io]
+replace-with = "rsproxy-sparse"
 
-WORKDIR /build
+[source.rsproxy-sparse]
+registry = "sparse+https://rsproxy.cn/crates.io-index"
+
+[source.tuna]
+registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+
+[registries.rsproxy-sparse]
+index = "sparse+https://rsproxy.cn/crates.io-index/"
+EOF
+
+WORKDIR /build/plog-rs
 
 # 安装构建依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -25,14 +34,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 优先复制依赖文件以利用缓存
-COPY plog-rs/Cargo.toml plog-rs/Cargo.lock* /build/
-COPY plog-rs/crates /build/crates
-COPY plog-rs/migrations /build/migrations
-COPY plog-rs/src /build/src
+# 复制整个项目 (docker context 是 /root/plog/docker, 所以用 ../ 访问 plog-rs)
+COPY ../plog-rs/Cargo.toml ../plog-rs/Cargo.lock* ./
+COPY ../plog-rs/packages ./packages
+COPY ../plog-rs/modules ./modules
+COPY ../plog-rs/extensions ./extensions
+COPY ../plog-rs/plog-api ./plog-api
+COPY ../plog-rs/migrations ./migrations
 
 # 构建应用
-RUN cargo build -p plog-server --release
+RUN cargo build -p plog-api --release
 
 # -----------------------------------------------------------------------------
 # 阶段 2: 运行阶段
@@ -50,10 +61,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && useradd --system --create-home --home-dir /app --shell /usr/sbin/nologin plog
 
 # 从构建阶段复制二进制文件
-COPY --from=builder /build/target/release/plog-api /usr/local/bin/plog-api
+COPY --from=builder /build/plog-rs/target/release/plog-api /usr/local/bin/plog-api
 
 # 复制配置文件
-COPY plog-rs/config/ /app/config/
+COPY ../plog-rs/config/ /app/config/
 
 # 创建必要目录
 RUN mkdir -p /app/content/uploads \

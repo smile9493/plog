@@ -1,0 +1,39 @@
+[package]
+name = "plog-api"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS API Service"
+license = "MIT"
+
+[[bin]]
+name = "plog-api"
+path = "src/main.rs"
+
+[dependencies]
+plog-core = { path = "../packages/plog-core" }
+plog-shared = { path = "../packages/plog-shared" }
+plog-content = { path = "../modules/content" }
+plog-auth = { path = "../modules/auth" }
+plog-settings = { path = "../modules/settings" }
+plog-media = { path = "../modules/media" }
+plog-audit = { path = "../modules/audit" }
+plog-plugin = { path = "../extensions/plugin" }
+plog-theme = { path = "../extensions/theme" }
+
+axum = { workspace = true }
+tokio = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+sea-orm = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+validator = { workspace = true }
+tower_governor = { workspace = true }
+anyhow = { workspace = true }
+
+[dependencies.plog-migrations]
+path = "../migrations"

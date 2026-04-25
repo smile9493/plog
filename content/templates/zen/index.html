@@ -15,20 +15,22 @@
       <a href="/" class="logo">Plog</a>
       <nav class="nav">
         <a href="/" class="nav-link active">文章</a>
-        <a href="/categories.html" class="nav-link">分类</a>
         <a href="/nav.html" class="nav-link">导航</a>
         <a href="/library.html" class="nav-link">书库</a>
         <a href="/mcp.html" class="nav-link">MCP</a>
         <a href="/skill.html" class="nav-link">Skill</a>
         <a href="/about.html" class="nav-link">关于</a>
+        <button class="search-btn" id="searchBtn" title="搜索 (Ctrl+K)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
       </nav>
     </div>
   </header>
 
   <main class="main">
     <div class="container">
-      <h1 class="page-title">文章</h1>
-      <p class="page-subtitle">记录思考，分享知识</p>
+      <h1 class="page-title" id="pageTitle">文章</h1>
+      <p class="page-subtitle" id="pageSubtitle">记录思考，分享知识</p>
 
       <section class="posts" id="posts">
       </section>
@@ -69,26 +71,49 @@
       </svg>
     </button>
     <div class="theme-menu" id="themeMenu">
-      <button class="theme-option" data-theme="light">
-        <span class="theme-preview light"></span>
-        <span>明亮</span>
+      <div class="theme-group-label">基础</div>
+      <button class="theme-option" data-theme="zen" data-intensity="light">
+        <span class="theme-preview zen"></span>
+        <span>禅</span>
       </button>
-      <button class="theme-option" data-theme="dark">
-        <span class="theme-preview dark"></span>
-        <span>暗色</span>
-      </button>
-      <button class="theme-option" data-theme="sepia">
+      <button class="theme-option" data-theme="sepia" data-intensity="light">
         <span class="theme-preview sepia"></span>
-        <span>护眼</span>
+        <span>羊皮纸</span>
+      </button>
+      <button class="theme-option" data-theme="night" data-intensity="dark">
+        <span class="theme-preview night"></span>
+        <span>夜</span>
+      </button>
+      <div class="theme-group-label">自然</div>
+      <button class="theme-option" data-theme="forest" data-intensity="light">
+        <span class="theme-preview forest"></span>
+        <span>森林</span>
+      </button>
+      <button class="theme-option" data-theme="ocean" data-intensity="light">
+        <span class="theme-preview ocean"></span>
+        <span>海洋</span>
+      </button>
+      <div class="theme-group-label">暖色</div>
+      <button class="theme-option" data-theme="sunset" data-intensity="light">
+        <span class="theme-preview sunset"></span>
+        <span>落日</span>
+      </button>
+      <button class="theme-option" data-theme="nordic" data-intensity="light">
+        <span class="theme-preview nordic"></span>
+        <span>北欧</span>
       </button>
     </div>
   </div>
 
   <script src="theme.js"></script>
+  <script src="search.js"></script>
+  <script src="category.js"></script>
+  <script src="reading-mode.js"></script>
   <script>
     var categories = [];
     var currentPage = 1;
     var totalPages = 1;
+    var activeCategoryId = null;
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -127,7 +152,11 @@
     }
 
     function fetchPosts() {
-      fetch('/api/posts?status=n&page=' + currentPage + '&per_page=10')
+      var url = '/api/posts?status=n&page=' + currentPage + '&per_page=10';
+      if (activeCategoryId) {
+        url += '&category_id=' + activeCategoryId;
+      }
+      fetch(url)
         .then(function(res) { return res.json(); })
         .then(function(data) {
           if (data.success && data.data && data.data.items && data.data.items.length > 0) {
@@ -189,6 +218,22 @@
       fetchPosts();
       window.scrollTo(0, 0);
     }
+
+    document.addEventListener('categoryChange', function(e) {
+      activeCategoryId = e.detail.categoryId;
+      currentPage = 1;
+      var titleEl = document.getElementById('pageTitle');
+      var subtitleEl = document.getElementById('pageSubtitle');
+      if (activeCategoryId) {
+        var catName = getCategoryName(activeCategoryId);
+        titleEl.textContent = catName || '分类文章';
+        subtitleEl.textContent = '筛选分类下的文章';
+      } else {
+        titleEl.textContent = '文章';
+        subtitleEl.textContent = '记录思考，分享知识';
+      }
+      fetchPosts();
+    });
 
     fetchCategories();
     fetchPosts();

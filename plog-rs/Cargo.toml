@@ -1,36 +1,32 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/contracts",
-    "crates/core",
-    "crates/auth",
-    "crates/content",
-    "crates/settings",
-    "crates/media",
-    "crates/audit",
-    "crates/plugin",
-    "crates/theme",
-    "crates/cache",
-    "crates/api",
+    # 微内核架构 - 基础包
+    "packages/plog-core",
+    "packages/plog-shared",
+    
+    # 微内核架构 - 功能模块
+    "modules/content",
+    "modules/auth",
+    "modules/settings",
+    "modules/media",
+    "modules/audit",
+    
+    # 微内核架构 - 扩展
+    "extensions/plugin",
+    "extensions/theme",
+    
+    # API 服务
+    "plog-api",
+    
+    # 数据库迁移
     "migrations",
 ]
 
-[package]
-name = "plog-server"
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
-description = "Plog CMS Server"
 license = "MIT"
-
-[[bin]]
-name = "plog-api"
-path = "src/main.rs"
-
-[dependencies]
-plog-api = { path = "crates/api" }
-plog-auth = { path = "crates/auth" }
-tokio = { workspace = true }
-anyhow = { workspace = true }
 
 [workspace.dependencies]
 # Web 框架
@@ -80,6 +76,9 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 # 异步
 async-trait = "0.1"
 futures = "0.3"
+
+# TOML 解析
+toml = "0.8"
 
 [profile.dev]
 opt-level = 0

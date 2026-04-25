@@ -15,7 +15,6 @@
       <a href="/" class="logo">Plog</a>
       <nav class="nav">
         <a href="/" class="nav-link">文章</a>
-        <a href="/categories.html" class="nav-link">分类</a>
         <a href="/nav.html" class="nav-link">导航</a>
         <a href="/library.html" class="nav-link">书库</a>
         <a href="/mcp.html" class="nav-link active">MCP</a>
@@ -26,7 +25,7 @@
   </header>
 
   <main class="main">
-    <div class="container-wide">
+    <div class="container">
       <h1 class="page-title">MCP</h1>
       <p class="page-subtitle">Model Context Protocol — 连接 AI 与数据的标准协议</p>
 
@@ -179,12 +178,22 @@ await server.connect(transport);</code></pre>
       <svg class="theme-icon moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
     </button>
     <div class="theme-menu" id="themeMenu">
-      <button class="theme-option" data-theme="light"><span class="theme-preview light"></span><span>明亮</span></button>
-      <button class="theme-option" data-theme="dark"><span class="theme-preview dark"></span><span>暗色</span></button>
-      <button class="theme-option" data-theme="sepia"><span class="theme-preview sepia"></span><span>护眼</span></button>
+      <div class="theme-group-label">基础</div>
+      <button class="theme-option" data-theme="zen" data-intensity="light"><span class="theme-preview zen"></span><span>禅</span></button>
+      <button class="theme-option" data-theme="sepia" data-intensity="light"><span class="theme-preview sepia"></span><span>羊皮纸</span></button>
+      <button class="theme-option" data-theme="night" data-intensity="dark"><span class="theme-preview night"></span><span>夜</span></button>
+      <div class="theme-group-label">自然</div>
+      <button class="theme-option" data-theme="forest" data-intensity="light"><span class="theme-preview forest"></span><span>森林</span></button>
+      <button class="theme-option" data-theme="ocean" data-intensity="light"><span class="theme-preview ocean"></span><span>海洋</span></button>
+      <div class="theme-group-label">暖色</div>
+      <button class="theme-option" data-theme="sunset" data-intensity="light"><span class="theme-preview sunset"></span><span>落日</span></button>
+      <button class="theme-option" data-theme="nordic" data-intensity="light"><span class="theme-preview nordic"></span><span>北欧</span></button>
     </div>
   </div>
 
   <script src="theme.js"></script>
+  <script src="search.js"></script>
+  <script src="category.js"></script>
+  <script src="reading-mode.js"></script>
 </body>
 </html>

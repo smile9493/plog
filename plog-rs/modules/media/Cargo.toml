@@ -1,0 +1,17 @@
+[package]
+name = "plog-media"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Media Module"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../../packages/plog-core" }
+plog-shared = { path = "../../packages/plog-shared" }
+sea-orm = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+uuid = { workspace = true }

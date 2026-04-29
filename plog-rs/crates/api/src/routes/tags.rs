@@ -12,6 +12,7 @@ use crate::AppState;
 use plog_auth::AuthUser;
 use plog_contracts::ApiResponse;
 use plog_content::{repository::TagRepository, entities::tag};
+use plog_shared::CrudRepository;
 
 /// 创建标签路由
 pub fn routes() -> Router<AppState> {
@@ -54,8 +55,8 @@ async fn list_tags(
     };
 
     match result {
-        Ok(tags) => Json(ApiResponse::success(serde_json::to_value(tags).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(tags) => Json(ApiResponse::ok(serde_json::to_value(tags).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -67,9 +68,9 @@ async fn get_tag(
     let repo = TagRepository::new(Arc::new(state.db));
 
     match repo.find_by_id(id).await {
-        Ok(Some(tag)) => Json(ApiResponse::success(serde_json::to_value(tag).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Tag not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(tag)) => Json(ApiResponse::ok(serde_json::to_value(tag).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Tag not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -83,7 +84,7 @@ async fn create_tag(
 
     // 验证必填字段
     if payload.tagname.trim().is_empty() {
-        return Json(ApiResponse::error("VALIDATION_ERROR", "Tag name is required"));
+        return Json(ApiResponse::err("VALIDATION_ERROR", "Tag name is required"));
     }
 
     let new_tag = tag::ActiveModel {
@@ -93,8 +94,8 @@ async fn create_tag(
     };
 
     match repo.create(new_tag).await {
-        Ok(tag) => Json(ApiResponse::success(serde_json::to_value(tag).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(tag) => Json(ApiResponse::ok(serde_json::to_value(tag).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -114,9 +115,9 @@ async fn update_tag(
     }
 
     match repo.update(id, update_data).await {
-        Ok(Some(tag)) => Json(ApiResponse::success(serde_json::to_value(tag).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Tag not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(tag)) => Json(ApiResponse::ok(serde_json::to_value(tag).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Tag not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -129,8 +130,8 @@ async fn delete_tag(
     let repo = TagRepository::new(Arc::new(state.db));
 
     match repo.delete(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Tag not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Tag not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }

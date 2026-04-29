@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, Query, State},
-    routing::{get, post, delete},
+    routing::get,
     Router, Json,
 };
 use serde::Deserialize;
@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use crate::AppState;
 use plog_auth::AuthUser;
-use plog_shared::ApiResponse;
+use plog_shared::{ApiResponse, CrudRepository};
 use plog_content::{TagRepository, entities::tag};
 
 pub fn routes() -> Router<AppState> {
@@ -25,6 +25,7 @@ pub struct ListParams {
     pub popular: Option<bool>,
 }
 
+#[tracing::instrument(skip(state))]
 async fn list_tags(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
@@ -38,23 +39,25 @@ async fn list_tags(
     };
 
     match result {
-        Ok(tags) => Json(ApiResponse::success(serde_json::to_value(tags).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(tags) => Json(ApiResponse::ok(serde_json::to_value(tags).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
+#[tracing::instrument(skip(state))]
 async fn get_tag(
     State(state): State<AppState>,
     Path(id): Path<i32>,
 ) -> Json<ApiResponse<serde_json::Value>> {
     let repo = TagRepository::new(Arc::new(state.db));
     match repo.find_by_id(id).await {
-        Ok(Some(tag)) => Json(ApiResponse::success(serde_json::to_value(tag).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Tag not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(tag)) => Json(ApiResponse::ok(serde_json::to_value(tag).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Tag not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
+#[tracing::instrument(skip(state))]
 async fn create_tag(
     State(state): State<AppState>,
     _user: AuthUser,
@@ -70,11 +73,12 @@ async fn create_tag(
     };
 
     match repo.create(new_tag).await {
-        Ok(tag) => Json(ApiResponse::success(serde_json::to_value(tag).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(tag) => Json(ApiResponse::ok(serde_json::to_value(tag).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
+#[tracing::instrument(skip(state))]
 async fn delete_tag(
     State(state): State<AppState>,
     Path(id): Path<i32>,
@@ -82,8 +86,8 @@ async fn delete_tag(
 ) -> Json<ApiResponse<()>> {
     let repo = TagRepository::new(Arc::new(state.db));
     match repo.delete(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Tag not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Tag not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }

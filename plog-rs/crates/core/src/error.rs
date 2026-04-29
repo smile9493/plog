@@ -30,9 +30,6 @@ pub enum PlogError {
     InternalError(String),
 
     #[error(transparent)]
-    Anyhow(#[from] anyhow::Error),
-
-    #[error(transparent)]
     Io(#[from] std::io::Error),
 
     #[error(transparent)]
@@ -41,6 +38,12 @@ pub enum PlogError {
 
 /// Plog 结果类型
 pub type PlogResult<T> = Result<T, PlogError>;
+
+impl From<anyhow::Error> for PlogError {
+    fn from(err: anyhow::Error) -> Self {
+        Self::InternalError(err.to_string())
+    }
+}
 
 impl PlogError {
     /// 获取 HTTP 状态码
@@ -54,7 +57,6 @@ impl PlogError {
             Self::NotFoundError(_) => 404,
             Self::ConflictError(_) => 409,
             Self::InternalError(_) => 500,
-            Self::Anyhow(_) => 500,
             Self::Io(_) => 500,
             Self::Json(_) => 400,
         }
@@ -71,7 +73,6 @@ impl PlogError {
             Self::NotFoundError(_) => "NOT_FOUND",
             Self::ConflictError(_) => "CONFLICT",
             Self::InternalError(_) => "INTERNAL_ERROR",
-            Self::Anyhow(_) => "INTERNAL_ERROR",
             Self::Io(_) => "INTERNAL_ERROR",
             Self::Json(_) => "INVALID_JSON",
         }

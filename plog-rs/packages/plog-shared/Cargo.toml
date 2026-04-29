@@ -13,6 +13,7 @@ serde_json = { workspace = true }
 uuid = { workspace = true }
 chrono = { workspace = true }
 async-trait = { workspace = true }
-
-[features]
-default = []
+thiserror = { workspace = true }
+validator = { workspace = true }
+config = { workspace = true }
+axum = { workspace = true }

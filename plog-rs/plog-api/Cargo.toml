@@ -34,6 +34,14 @@ uuid = { workspace = true }
 validator = { workspace = true }
 tower_governor = { workspace = true }
 anyhow = { workspace = true }
+tokio-util = { workspace = true }
 
 [dependencies.plog-migrations]
 path = "../migrations"
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "api_bench"
+harness = false

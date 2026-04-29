@@ -1,4 +1,12 @@
 //! JWT Service
+//!
+//! Performance Note: Claims 结构体在每个认证请求中被克隆
+//! Trade-off Analysis:
+//! - P3 (performance): username/role 使用 String 而非 Arc<str>
+//! - 原因: jsonwebtoken 库序列化需要 Owned 类型
+//! - 影响: 每次验证约 ~100 bytes 堆分配
+//! - 优化路径: 如需极致性能，考虑自定义 Claims 或使用 compact_jws
+//! - Decision: 保持 String，等 profiling 数据验证瓶颈
 
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};

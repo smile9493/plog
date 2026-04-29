@@ -1,13 +1,13 @@
 //! Post Repository
 
-use sea_orm::{*, prelude::Expr};
+use sea_orm::{*, sea_query::Expr};
 use std::sync::Arc;
 
 use crate::entities::post::*;
-use plog_shared::apply_if_set;
+use plog_shared::{CrudRepository, impl_crud_repository, impl_sortable_repository, apply_if_set};
 
 pub struct PostRepository {
-    db: Arc<DatabaseConnection>,
+    pub db: Arc<DatabaseConnection>,
 }
 
 impl PostRepository {
@@ -15,28 +15,11 @@ impl PostRepository {
         Self { db }
     }
 
-    pub fn db(&self) -> &Arc<DatabaseConnection> {
-        &self.db
-    }
-
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Model>, DbErr> {
-        Entity::find_by_id(id).one(&*self.db).await
-    }
-
     pub async fn find_by_alias(&self, alias: &str) -> Result<Option<Model>, DbErr> {
         Entity::find()
             .filter(Column::Alias.eq(alias))
             .one(&*self.db)
             .await
-    }
-
-    pub async fn paginate(&self, page: u64, per_page: u64) -> Result<(Vec<Model>, u64), DbErr> {
-        let paginator = Entity::find()
-            .order_by_desc(Column::Date)
-            .paginate(&*self.db, per_page);
-        let total = paginator.num_items().await?;
-        let items = paginator.fetch_page(page.saturating_sub(1)).await?;
-        Ok((items, total))
     }
 
     pub async fn find_published(&self, page: u64, per_page: u64) -> Result<(Vec<Model>, u64), DbErr> {
@@ -76,10 +59,6 @@ impl PostRepository {
         Ok((items, total))
     }
 
-    pub async fn create(&self, data: ActiveModel) -> Result<Model, DbErr> {
-        data.insert(&*self.db).await
-    }
-
     pub async fn update(&self, id: i32, data: ActiveModel) -> Result<Option<Model>, DbErr> {
         let model = Entity::find_by_id(id).one(&*self.db).await?;
         match model {
@@ -94,11 +73,6 @@ impl PostRepository {
         }
     }
 
-    pub async fn delete(&self, id: i32) -> Result<bool, DbErr> {
-        let result = Entity::delete_by_id(id).exec(&*self.db).await?;
-        Ok(result.rows_affected > 0)
-    }
-
     pub async fn increment_views(&self, id: i32) -> Result<bool, DbErr> {
         let result = Entity::update_many()
             .col_expr(Column::Views, Expr::col(Column::Views).add(1))
@@ -106,10 +80,6 @@ impl PostRepository {
             .exec(&*self.db)
             .await?;
         Ok(result.rows_affected > 0)
-    }
-
-    pub async fn count(&self) -> Result<u64, DbErr> {
-        Entity::find().count(&*self.db).await
     }
 
     pub async fn filter(
@@ -152,3 +122,6 @@ impl PostRepository {
         Ok((items, total))
     }
 }
+
+impl_crud_repository!(PostRepository, Entity, ActiveModel, i32, Column::Gid);
+impl_sortable_repository!(PostRepository, Column::Date);

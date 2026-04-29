@@ -12,6 +12,7 @@ use crate::AppState;
 use plog_auth::AuthUser;
 use plog_contracts::ApiResponse;
 use plog_content::{repository::CategoryRepository, entities::category};
+use plog_shared::CrudRepository;
 
 /// 创建分类路由
 pub fn routes() -> Router<AppState> {
@@ -47,8 +48,8 @@ async fn list_categories(
     let repo = CategoryRepository::new(Arc::new(state.db));
 
     match repo.find_all().await {
-        Ok(categories) => Json(ApiResponse::success(serde_json::to_value(categories).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(categories) => Json(ApiResponse::ok(serde_json::to_value(categories).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -60,9 +61,9 @@ async fn get_category(
     let repo = CategoryRepository::new(Arc::new(state.db));
 
     match repo.find_by_id(id).await {
-        Ok(Some(category)) => Json(ApiResponse::success(serde_json::to_value(category).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Category not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(category)) => Json(ApiResponse::ok(serde_json::to_value(category).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Category not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -76,7 +77,7 @@ async fn create_category(
 
     // 验证必填字段
     if payload.sortname.trim().is_empty() {
-        return Json(ApiResponse::error("VALIDATION_ERROR", "Category name is required"));
+        return Json(ApiResponse::err("VALIDATION_ERROR", "Category name is required"));
     }
 
     let new_category = category::ActiveModel {
@@ -89,8 +90,8 @@ async fn create_category(
     };
 
     match repo.create(new_category).await {
-        Ok(category) => Json(ApiResponse::success(serde_json::to_value(category).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(category) => Json(ApiResponse::ok(serde_json::to_value(category).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -122,9 +123,9 @@ async fn update_category(
     }
 
     match repo.update(id, update_data).await {
-        Ok(Some(category)) => Json(ApiResponse::success(serde_json::to_value(category).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Category not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(category)) => Json(ApiResponse::ok(serde_json::to_value(category).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Category not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -137,8 +138,8 @@ async fn delete_category(
     let repo = CategoryRepository::new(Arc::new(state.db));
 
     match repo.delete(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Category not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Category not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }

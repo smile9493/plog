@@ -85,7 +85,7 @@ async fn me(
     );
 
     match auth_service.get_current_user(user.user_id).await {
-        Ok(user_info) => Json(ApiResponse::success(user_info)),
-        Err(e) => Json(ApiResponse::error(e.error_code(), e.to_string())),
+        Ok(user_info) => Json(ApiResponse::ok(user_info)),
+        Err(e) => Json(ApiResponse::err(e.error_code(), e.to_string())),
     }
 }

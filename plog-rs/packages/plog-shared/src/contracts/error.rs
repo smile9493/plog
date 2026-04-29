@@ -2,40 +2,49 @@
 //! 
 //! 统一的 API 错误定义
 
-use serde::{Deserialize, Serialize};
+pub use crate::contracts::response::ErrorBody;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ApiError {
-    pub code: String,
-    pub message: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub details: Option<serde_json::Value>,
+/// 标准错误码
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ErrorCode {
+    BadRequest,
+    Unauthorized,
+    Forbidden,
+    NotFound,
+    Conflict,
+    ValidationError,
+    InternalError,
+    DatabaseError,
+    AuthFailed,
+    TokenInvalid,
+    ResourceNotFound,
 }
 
-impl ApiError {
-    pub fn new(code: impl Into<String>, message: impl Into<String>) -> Self {
-        Self {
-            code: code.into(),
-            message: message.into(),
-            details: None,
+impl ErrorCode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::BadRequest => "BAD_REQUEST",
+            Self::Unauthorized => "UNAUTHORIZED",
+            Self::Forbidden => "FORBIDDEN",
+            Self::NotFound => "NOT_FOUND",
+            Self::Conflict => "CONFLICT",
+            Self::ValidationError => "VALIDATION_ERROR",
+            Self::InternalError => "INTERNAL_ERROR",
+            Self::DatabaseError => "DATABASE_ERROR",
+            Self::AuthFailed => "AUTH_FAILED",
+            Self::TokenInvalid => "TOKEN_INVALID",
+            Self::ResourceNotFound => "RESOURCE_NOT_FOUND",
         }
     }
 
-    pub fn with_details(code: impl Into<String>, message: impl Into<String>, details: serde_json::Value) -> Self {
-        Self {
-            code: code.into(),
-            message: message.into(),
-            details: Some(details),
-        }
-    }
-}
-
-impl From<plog_core::CoreError> for ApiError {
-    fn from(e: plog_core::CoreError) -> Self {
-        Self {
-            code: e.error_code().to_string(),
-            message: e.to_string(),
-            details: None,
+    pub fn http_status(&self) -> u16 {
+        match self {
+            Self::BadRequest | Self::ValidationError => 400,
+            Self::Unauthorized | Self::AuthFailed | Self::TokenInvalid => 401,
+            Self::Forbidden => 403,
+            Self::NotFound | Self::ResourceNotFound => 404,
+            Self::Conflict => 409,
+            Self::InternalError | Self::DatabaseError => 500,
         }
     }
 }

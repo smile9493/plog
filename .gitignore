@@ -3,10 +3,23 @@
 # ==================== Rust 构建 ====================
 plog-rs/target/
 plog-rs/Cargo.lock
+plog-rs/**/*.rs.bk
+plog-rs/**/Cargo.lock
+
+# Flamegraph 输出
+*.svg
+flamegraph*.svg
+
+# Criterion 基准测试输出
+plog-rs/target/criterion/
+**/criterion/
 
 # ==================== 前端构建 ====================
 apps/admin-web/node_modules/
 apps/admin-web/dist/
+apps/admin-web/.nuxt/
+apps/admin-web/.output/
+apps/admin-web/.cache/
 
 # ==================== 内容目录 ====================
 content/uploadfile/*
@@ -24,6 +37,7 @@ content/templates/*
 
 # ==================== 日志文件 ====================
 *.log
+logs/
 
 # ==================== 临时文件 ====================
 *.tmp
@@ -37,6 +51,8 @@ content/templates/*
 .idea/
 *.sublime-project
 *.sublime-workspace
+.fleet/
+.rust-analyzer/
 
 # ==================== 系统文件 ====================
 .DS_Store
@@ -46,9 +62,11 @@ Desktop.ini
 # ==================== Docker ====================
 .docker/
 docker/.env
+docker/override.env
 
 # ==================== 配置敏感文件 ====================
 config/sync_config.json
+plog-rs/config/settings.local.toml
 
 # ==================== AI工具目录 ====================
 .agents/
@@ -82,11 +100,14 @@ secrets/
 .env
 .env.local
 .env.*.local
+.env.production
 
 # ==================== 数据库 ====================
 *.db
 *.sqlite
 *.sqlite3
+data/mysql/
+data/redis/
 
 # ==================== 参考文件 ====================
 deepseek_html_*
@@ -94,6 +115,20 @@ deepseek_html_*
 # ==================== Python缓存 ====================
 __pycache__/
 *.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
 
 # ==================== Cargo本地配置 ====================
 plog-rs/.cargo/
+
+# ==================== 性能分析 ====================
+massif.out.*
+callgrind.out.*
+*.profraw
+*.profdata
+
+# ==================== 测试覆盖率 ====================
+coverage/
+*.lcov
+tarpaulin-report.html

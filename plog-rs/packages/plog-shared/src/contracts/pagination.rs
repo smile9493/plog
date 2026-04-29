@@ -50,21 +50,16 @@ impl PaginationParams {
         if total == 0 {
             return 1;
         }
-        (total + self.per_page - 1) / self.per_page
+        total.div_ceil(self.per_page)
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum SortOrder {
     Asc,
+    #[default]
     Desc,
-}
-
-impl Default for SortOrder {
-    fn default() -> Self {
-        Self::Desc
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

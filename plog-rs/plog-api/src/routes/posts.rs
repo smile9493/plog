@@ -2,7 +2,7 @@
 
 use axum::{
     extract::{Path, Query, State},
-    routing::{get, post, put, delete},
+    routing::get,
     Router, Json,
 };
 use serde::Deserialize;
@@ -10,7 +10,7 @@ use std::sync::Arc;
 
 use crate::AppState;
 use plog_auth::AuthUser;
-use plog_shared::{ApiResponse, api_result, api_paged, api_delete};
+use plog_shared::{ApiResponse, api_result, api_paged, api_delete, CrudRepository};
 use plog_content::{PostRepository, entities::post};
 
 pub fn routes() -> Router<AppState> {
@@ -29,10 +29,11 @@ pub struct ListParams {
     pub order: Option<String>,
 }
 
+#[tracing::instrument(skip(state))]
 async fn list_posts(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
-) -> Json<ApiResponse<serde_json::Value>> {
+) -> Json<ApiResponse<plog_shared::PaginatedData<post::Model>>> {
     let repo = PostRepository::new(Arc::new(state.db));
     let page = params.page.unwrap_or(1);
     let per_page = params.per_page.unwrap_or(20).min(100);
@@ -51,6 +52,7 @@ async fn list_posts(
     ))
 }
 
+#[tracing::instrument(skip(state))]
 async fn get_post(
     State(state): State<AppState>,
     Path(id): Path<i32>,
@@ -62,6 +64,7 @@ async fn get_post(
     ))
 }
 
+#[tracing::instrument(skip(state))]
 async fn create_post(
     State(state): State<AppState>,
     _user: AuthUser,
@@ -95,15 +98,17 @@ async fn create_post(
     ))
 }
 
+#[tracing::instrument(skip(_state, _payload))]
 async fn update_post(
-    State(state): State<AppState>,
-    Path(id): Path<i32>,
+    State(_state): State<AppState>,
+    Path(_id): Path<i32>,
     _user: AuthUser,
     Json(_payload): Json<serde_json::Value>,
 ) -> Json<ApiResponse<serde_json::Value>> {
-    Json(ApiResponse::error("NOT_IMPLEMENTED", "Update not implemented"))
+    Json(ApiResponse::err("NOT_IMPLEMENTED", "Update not implemented"))
 }
 
+#[tracing::instrument(skip(state))]
 async fn delete_post(
     State(state): State<AppState>,
     Path(id): Path<i32>,

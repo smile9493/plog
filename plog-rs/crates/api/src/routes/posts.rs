@@ -13,6 +13,7 @@ use crate::AppState;
 use plog_auth::AuthUser;
 use plog_contracts::ApiResponse;
 use plog_content::{repository::PostRepository, entities::post};
+use plog_shared::CrudRepository;
 
 /// 创建文章路由
 pub fn routes() -> Router<AppState> {
@@ -105,9 +106,9 @@ async fn list_posts(
                     "has_more": page < total_pages
                 }
             });
-            Json(ApiResponse::success(response_data))
+            Json(ApiResponse::ok(response_data))
         }
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -119,9 +120,9 @@ async fn get_post(
     let repo = PostRepository::new(Arc::new(state.db));
 
     match repo.find_by_id(id).await {
-        Ok(Some(post)) => Json(ApiResponse::success(serde_json::to_value(post).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Post not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(post)) => Json(ApiResponse::ok(serde_json::to_value(post).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Post not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -177,8 +178,8 @@ async fn create_post(
     };
 
     match repo.create(new_post).await {
-        Ok(post) => Json(ApiResponse::success(serde_json::to_value(post).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(post) => Json(ApiResponse::ok(serde_json::to_value(post).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -225,9 +226,9 @@ async fn update_post(
     }
 
     match repo.update(id, update_data).await {
-        Ok(Some(post)) => Json(ApiResponse::success(serde_json::to_value(post).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Post not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(post)) => Json(ApiResponse::ok(serde_json::to_value(post).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Post not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -240,8 +241,8 @@ async fn delete_post(
     let repo = PostRepository::new(Arc::new(state.db));
 
     match repo.delete(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Post not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Post not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }

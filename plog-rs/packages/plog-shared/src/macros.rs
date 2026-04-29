@@ -3,14 +3,6 @@
 //! 用于压缩样板代码的宏定义
 
 /// 条件更新字段宏
-/// 
-/// 用于 SeaORM ActiveModel 的条件更新，替代重复的 if-is-set 模式
-/// 
-/// # Example
-/// 
-/// ```ignore
-/// apply_if_set!(data, active, title, content, excerpt);
-/// ```
 #[macro_export]
 macro_rules! apply_if_set {
     ($data:expr, $active:expr, $( $field:ident ),* $(,)?) => {
@@ -23,108 +15,133 @@ macro_rules! apply_if_set {
 }
 
 /// API 结果处理宏
-/// 
-/// 用于简化路由处理器中的 match 模式
-/// 
-/// # Example
-/// 
-/// ```ignore
-/// api_result!(repo.find_by_id(id).await, "Post not found")
-/// ```
 #[macro_export]
 macro_rules! api_result {
     ($result:expr, $not_found_msg:expr) => {
         match $result {
-            Ok(Some(data)) => $crate::ApiResponse::success(data),
-            Ok(None) => $crate::ApiResponse::error("NOT_FOUND", $not_found_msg),
-            Err(e) => $crate::ApiResponse::error("DATABASE_ERROR", e.to_string()),
+            Ok(Some(data)) => $crate::ApiResponse::ok(data),
+            Ok(None) => $crate::ApiResponse::err("NOT_FOUND", $not_found_msg),
+            Err(e) => $crate::ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     };
 }
 
 /// API 分页结果处理宏
-/// 
-/// 用于处理分页查询结果
-/// 
-/// # Example
-/// 
-/// ```ignore
-/// api_paged!(repo.paginate(page, per_page).await, page, per_page)
-/// ```
 #[macro_export]
 macro_rules! api_paged {
     ($result:expr, $page:expr, $per_page:expr) => {
         match $result {
             Ok((items, total)) => {
-                let total_pages = (total + $per_page - 1) / $per_page;
-                $crate::ApiResponse::success(serde_json::json!({
-                    "items": items,
-                    "pagination": {
-                        "page": $page,
-                        "per_page": $per_page,
-                        "total": total,
-                        "total_pages": total_pages,
-                        "has_more": $page < total_pages
-                    }
-                }))
+                $crate::ApiResponse::ok($crate::PaginatedData::new(
+                    items,
+                    $page,
+                    $per_page,
+                    total,
+                ))
             }
-            Err(e) => $crate::ApiResponse::error("DATABASE_ERROR", e.to_string()),
-        }
-    };
-}
-
-/// API 简单结果处理宏（用于 create/update/delete）
-/// 
-/// # Example
-/// 
-/// ```ignore
-/// api_simple!(repo.create(data).await, "Failed to create")
-/// ```
-#[macro_export]
-macro_rules! api_simple {
-    ($result:expr, $error_msg:expr) => {
-        match $result {
-            Ok(data) => $crate::ApiResponse::success(data),
-            Err(e) => $crate::ApiResponse::error("OPERATION_FAILED", format!("{}: {}", $error_msg, e)),
+            Err(e) => $crate::ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     };
 }
 
 /// API 删除结果处理宏
-/// 
-/// # Example
-/// 
-/// ```ignore
-/// api_delete!(repo.delete(id).await, "Item not found")
-/// ```
 #[macro_export]
 macro_rules! api_delete {
     ($result:expr, $not_found_msg:expr) => {
         match $result {
-            Ok(true) => $crate::ApiResponse::success(()),
-            Ok(false) => $crate::ApiResponse::error("NOT_FOUND", $not_found_msg),
-            Err(e) => $crate::ApiResponse::error("DATABASE_ERROR", e.to_string()),
+            Ok(true) => $crate::ApiResponse::ok(()),
+            Ok(false) => $crate::ApiResponse::err("NOT_FOUND", $not_found_msg),
+            Err(e) => $crate::ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     };
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_apply_if_set() {
-        use sea_orm::Set;
+/// 实现 CrudRepository Trait 的宏
+#[macro_export]
+macro_rules! impl_crud_repository {
+    (
+        $repo:ty,
+        $entity:ty,
+        $active_model:ty,
+        $id_type:ty,
+        $id_column:path
+    ) => {
+        // Sealed trait 实现
+        impl $crate::private::Sealed for $repo {}
+        
+        #[async_trait::async_trait]
+        impl $crate::CrudRepository for $repo {
+            type Entity = $entity;
+            type ActiveModel = $active_model;
+            type Id = $id_type;
 
-        struct TestData {
-            title: Set<String>,
-            content: Set<String>,
+            fn db(&self) -> &std::sync::Arc<sea_orm::DatabaseConnection> {
+                &self.db
+            }
+
+            fn id_column() -> <Self::Entity as sea_orm::EntityTrait>::Column {
+                $id_column
+            }
+
+            async fn find_by_id(&self, id: Self::Id) -> Result<Option<<Self::Entity as sea_orm::EntityTrait>::Model>, sea_orm::DbErr> {
+                Self::Entity::find()
+                    .filter(Self::id_column().eq(id))
+                    .one(&**self.db())
+                    .await
+            }
+
+            async fn find_all(&self) -> Result<Vec<<Self::Entity as sea_orm::EntityTrait>::Model>, sea_orm::DbErr> {
+                Self::Entity::find()
+                    .all(&**self.db())
+                    .await
+            }
+
+            async fn create(&self, data: Self::ActiveModel) -> Result<<Self::Entity as sea_orm::EntityTrait>::Model, sea_orm::DbErr> {
+                data.insert(&**self.db()).await
+            }
+
+            async fn delete(&self, id: Self::Id) -> Result<bool, sea_orm::DbErr> {
+                let model = Self::Entity::find()
+                    .filter(Self::id_column().eq(id))
+                    .one(&**self.db())
+                    .await?;
+                match model {
+                    Some(m) => {
+                        m.delete(&**self.db()).await?;
+                        Ok(true)
+                    }
+                    None => Ok(false),
+                }
+            }
+
+            async fn count(&self) -> Result<u64, sea_orm::DbErr> {
+                Self::Entity::find()
+                    .count(&**self.db())
+                    .await
+            }
         }
+    };
+}
 
-        let data = TestData {
-            title: Set("test".to_string()),
-            content: Set("content".to_string()),
-        };
+/// 实现 SortableRepository Trait 的宏
+#[macro_export]
+macro_rules! impl_sortable_repository {
+    ($repo:ty, $sort_column:path) => {
+        #[async_trait::async_trait]
+        impl $crate::SortableRepository for $repo {
+            fn default_sort_column() -> <Self::Entity as sea_orm::EntityTrait>::Column {
+                $sort_column
+            }
 
-        assert!(data.title.is_set());
-        assert!(data.content.is_set());
-    }
+            async fn find_all_sorted(&self, desc: bool) -> Result<Vec<<Self::Entity as sea_orm::EntityTrait>::Model>, sea_orm::DbErr> {
+                let query = Self::Entity::find();
+                let query = if desc {
+                    query.order_by_desc(Self::default_sort_column())
+                } else {
+                    query.order_by_asc(Self::default_sort_column())
+                };
+                query.all(&**self.db()).await
+            }
+        }
+    };
 }

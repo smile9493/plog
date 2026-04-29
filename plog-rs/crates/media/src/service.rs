@@ -116,7 +116,9 @@ impl MediaService {
                     filesize: Set(data.len() as i64),
                     mimetype: Set(mimetype.to_string()),
                     extension: Set(ext),
-                    width: Set(None), // TODO: 获取图片尺寸
+                    // DEVIATION: Image dimensions not extracted - requires image parsing library
+                    // Could be added with `image` crate if needed for thumbnails/resizing
+                    width: Set(None),
                     height: Set(None),
                     user_id: Set(user_id),
                     storage_driver: Set("local".to_string()),

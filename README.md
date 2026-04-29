@@ -1,32 +1,45 @@
 # Plog CMS
 
-Plog 是一个基于 Rust 的现代博客系统，采用前后端分离架构，支持 Docker 一键部署与模块化扩展。
+> 基于 Rust 的现代博客系统，采用微内核架构，支持 Docker 一键部署
+
+[![Rust](https://img.shields.io/badge/Rust-1.88+-orange.svg)](https://rust-lang.org)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## 技术栈
 
-- **后端**：Rust、Axum、SeaORM、MySQL
-- **前端管理**：Vue 3、TypeScript、Element Plus、Pinia
-- **前台网站**：纯 HTML/CSS/JS，零构建依赖，多主题支持
-- **部署**：Docker、Docker Compose、Nginx
+| 层级 | 技术 |
+|------|------|
+| 后端 | Rust、Axum、SeaORM、MySQL |
+| 前端管理 | Vue 3、TypeScript、Element Plus |
+| 前台网站 | HTML/CSS/JS、多主题支持 |
+| 部署 | Docker、Docker Compose、Nginx |
 
-## 项目结构
+## 架构
 
-```text
+```
 plog/
+├── plog-rs/                    # Rust 微内核工作区
+│   ├── packages/               # 基础包
+│   │   ├── plog-core/          # 核心错误与工具
+│   │   └── plog-shared/        # 共享类型与 trait
+│   ├── modules/                # 功能模块
+│   │   ├── content/            # 内容管理
+│   │   ├── auth/               # 认证授权
+│   │   ├── settings/           # 系统设置
+│   │   ├── media/              # 媒体管理
+│   │   └── audit/              # 审计日志
+│   ├── extensions/             # 扩展模块
+│   │   ├── plugin/             # 插件系统
+│   │   └── theme/              # 主题系统
+│   ├── plog-api/               # API 服务入口
+│   ├── crates/                 # 独立测试模块
+│   ├── config/                 # 配置文件
+│   ├── migrations/             # 数据库迁移
+│   └── benches/                # 性能基准测试
 ├── apps/
-│   └── admin-web/          管理后台前端 (Vue 3 + Element Plus)
-├── plog-rs/                Rust 后端工作区
-│   ├── crates/
-│   │   ├── api/            Axum Web API
-│   │   ├── auth/           认证与密码模块
-│   │   ├── content/        内容实体与仓储
-│   │   └── core/           核心错误与工具
-│   ├── config/             配置文件
-│   └── migrations/         数据库迁移
-├── docker/                 Docker 部署配置
-├── content/
-│   └── templates/zen/      前台主题模板
-└── docs/                   文档
+│   └── admin-web/              # 管理后台 (Vue 3)
+├── docker/                     # Docker 部署
+└── docs/                       # 文档
 ```
 
 ## 快速开始
@@ -38,29 +51,19 @@ cd docker
 docker compose up -d
 ```
 
-首次部署访问 http://localhost:8081 进入初始化引导页面，创建管理员账户。
+首次访问 http://localhost:8081 进入初始化页面。
 
-### 访问地址
+### 本地开发
 
-| 服务 | 地址 | 说明 |
-|------|------|------|
-| 前台网站 | http://localhost:8082 | 博客前台，支持明亮/暗色/护眼主题 |
-| 管理后台 | http://localhost:8081 | 文章、分类、标签、评论管理 |
-| API 服务 | http://localhost:8080 | RESTful API |
-
-### 默认账户
-
-首次部署通过初始化页面创建，或使用已有账户登录。
-
-### 后端本地开发
+#### 后端
 
 ```bash
 cd plog-rs
 cp config/default.toml config/config.toml
-cargo run --bin plog-api
+cargo run --release
 ```
 
-### 前端本地开发
+#### 前端
 
 ```bash
 cd apps/admin-web
@@ -68,61 +71,134 @@ npm install
 npm run dev
 ```
 
+## 服务端口
+
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| API | 8080 | RESTful API |
+| 管理后台 | 8081 | Vue 3 SPA |
+| 前台网站 | 8082 | 静态站点 |
+| MySQL | 3306 | 数据库 |
+
 ## 功能特性
 
 ### 后台管理
-- 📝 文章管理 — 创建、编辑、发布、草稿
-- 🏷️ 分类管理 — 分类创建、编辑、删除
-- 🔖 标签管理 — 标签创建、编辑、删除
-- 💬 评论管理 — 评论审核与回复
-- 👤 用户管理 — 用户角色与权限
-- ⚙️ 系统设置 — 基本设置、内容设置、SEO
-- 🎨 主题管理 — 多主题切换（现代/明亮/暗色/绿色）
-- 🔌 插件管理 — 插件安装与配置
+- 文章、分类、标签、评论管理
+- 用户角色与权限
+- 主题与插件系统
+- 系统设置
 
 ### 前台网站
-- 📖 文章列表 — 分页浏览，按分类筛选
-- 📄 文章详情 — Markdown 渲染，代码高亮
-- 📂 分类浏览 — 按主题浏览文章
-- 🧭 导航收藏 — 精选开发资源与工具
-- 📚 书库 — 阅读记录与推荐书单
-- 🤖 MCP — Model Context Protocol 介绍与生态
-- 🧩 Agent Skill — AI Agent 技能定义与能力扩展
-- 🌓 主题切换 — 明亮/暗色/护眼，跨页面持久化
+- 文章浏览与搜索
+- 分类筛选
+- 多主题支持（明亮/暗色/护眼）
+- 响应式设计
 
 ### 技术特性
-- 🔒 JWT 认证 — httpOnly Cookie 安全存储
-- 🐳 Docker 部署 — 一键启动，容器化运行
-- 🌐 CORS 支持 — 跨域请求安全配置
-- 📊 分页查询 — 后端分页，前端分页组件
-- 🎯 响应式设计 — 适配桌面与移动端
+- JWT 认证 (httpOnly Cookie)
+- 优雅关闭与信号处理
+- 请求超时保护
+- 慢查询监控
+- CI 强制 Lints 保护
+
+## 性能优化
+
+详见 [PERFORMANCE_TUNING.md](plog-rs/PERFORMANCE_TUNING.md)
+
+### 基准测试
+
+```bash
+cd plog-rs
+cargo bench --bench api_bench
+```
+
+### 性能分析
+
+```bash
+# CPU 火焰图
+cargo flamegraph --root
+
+# 慢查询监控
+RUST_LOG=sqlx=debug cargo run
+```
+
+## 文档
+
+| 文档 | 说明 |
+|------|------|
+| [DESIGN.md](DESIGN.md) | 架构设计 |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | 部署指南 |
+| [plog-rs/README.md](plog-rs/README.md) | Rust 后端 |
+| [plog-rs/PERFORMANCE.md](plog-rs/PERFORMANCE.md) | 性能优化 |
+| [docker/README.md](docker/README.md) | Docker 部署 |
 
 ## API 概览
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | POST | /api/auth/login | 登录 |
-| POST | /api/auth/logout | 登出 |
 | GET | /api/posts | 文章列表 |
 | POST | /api/posts | 创建文章 |
-| GET | /api/posts/:id | 文章详情 |
-| PUT | /api/posts/:id | 更新文章 |
-| DELETE | /api/posts/:id | 删除文章 |
 | GET | /api/categories | 分类列表 |
-| POST | /api/categories | 创建分类 |
-| PUT | /api/categories/:id | 更新分类 |
-| DELETE | /api/categories/:id | 删除分类 |
 | GET | /api/tags | 标签列表 |
-| POST | /api/tags | 创建标签 |
-| PUT | /api/tags/:id | 更新标签 |
-| DELETE | /api/tags/:id | 删除标签 |
-| GET | /api/comments | 评论列表 |
+| GET | /health | 健康检查 |
 
-## 文档索引
+## 配置
 
-- `docs/` — 项目总览与架构文档
-- `docker/` — Docker 部署说明
-- `plog-rs/` — Rust 后端开发说明
+### 环境变量
+
+```bash
+# 数据库
+PLOG__DATABASE__URL=mysql://user:pass@host/db
+
+# JWT
+PLOG__AUTH__JWT_SECRET=your-secret
+
+# 日志
+RUST_LOG=plog_api=info,sqlx=debug
+```
+
+### 配置文件
+
+编辑 `plog-rs/config/settings.toml`:
+
+```toml
+[database]
+url = "mysql://plog:plog123@localhost/plog"
+max_connections = 20
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[auth]
+jwt_secret = "your-secret-key"
+jwt_expiration = 86400
+
+[cors]
+allowed_origins = ["http://localhost:8081"]
+```
+
+## 开发规范
+
+### Rust 规范
+
+项目遵循 Rust Architecture Guide V9.0.0:
+
+- P0: 安全性优先 (无 unsafe, panic hook)
+- P1: 可维护性 (sealed trait, non_exhaustive)
+- P2: 工程效率 (workspace, CI lints)
+- P3: 性能优化 (profiling-driven)
+
+详见 [plog-rs/](plog-rs/) 目录下的各个模块。
+
+## 致谢
+
+本项目遵循 [Rust Coding Standards Skills](https://github.com/smile9493/Rust_Coding_Standards_Skills) 规范体系：
+
+- **rust-architecture-guide** V9.0.0 — 通用工程宪法
+- **rust-systems-cloud-infra-guide** V6.0.0 — 云基础设施规范
+- **rust-wasm-frontend-infra-guide** V4.0.0 — WASM 前端规范
 
 ## License
 

@@ -18,23 +18,23 @@ impl SettingsService {
 
     pub async fn get_all(&self) -> ApiResponse<Vec<crate::entity::Model>> {
         match self.repo.find_all().await {
-            Ok(settings) => ApiResponse::success(settings),
-            Err(e) => ApiResponse::error("DATABASE_ERROR", e.to_string()),
+            Ok(settings) => ApiResponse::ok(settings),
+            Err(e) => ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     }
 
     pub async fn get(&self, key: &str) -> ApiResponse<crate::entity::Model> {
         match self.repo.find_by_key(key).await {
-            Ok(Some(setting)) => ApiResponse::success(setting),
-            Ok(None) => ApiResponse::error("NOT_FOUND", "Setting not found"),
-            Err(e) => ApiResponse::error("DATABASE_ERROR", e.to_string()),
+            Ok(Some(setting)) => ApiResponse::ok(setting),
+            Ok(None) => ApiResponse::err("NOT_FOUND", "Setting not found"),
+            Err(e) => ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     }
 
     pub async fn set(&self, key: &str, value: serde_json::Value) -> ApiResponse<crate::entity::Model> {
         match self.repo.set_value(key, value).await {
-            Ok(setting) => ApiResponse::success(setting),
-            Err(e) => ApiResponse::error("DATABASE_ERROR", e.to_string()),
+            Ok(setting) => ApiResponse::ok(setting),
+            Err(e) => ApiResponse::err("DATABASE_ERROR", e.to_string()),
         }
     }
 

@@ -5,11 +5,13 @@
 use serde::{Deserialize, Serialize};
 
 /// 用户角色枚举
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum Role {
     Admin,
     Editor,
+    #[default]
     User,
 }
 
@@ -28,12 +30,6 @@ impl Role {
             (Role::Admin, _) |
             (Role::Editor, Role::Editor)
         )
-    }
-}
-
-impl Default for Role {
-    fn default() -> Self {
-        Self::User
     }
 }
 
@@ -67,18 +63,14 @@ impl std::str::FromStr for Role {
 }
 
 /// 文章类型
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum PostType {
+    #[default]
     Blog,
     Page,
     Draft,
-}
-
-impl Default for PostType {
-    fn default() -> Self {
-        Self::Blog
-    }
 }
 
 impl std::fmt::Display for PostType {
@@ -120,14 +112,8 @@ impl From<&str> for Visible {
 }
 
 /// 置顶状态
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub struct Pinned(pub bool);
-
-impl Default for Pinned {
-    fn default() -> Self {
-        Self(false)
-    }
-}
 
 impl From<Pinned> for String {
     fn from(p: Pinned) -> Self {
@@ -154,6 +140,7 @@ impl From<AllowComment> for String {
 /// 用户 ID（类型安全）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct UserId(pub i32);
 
 impl From<i32> for UserId {
@@ -171,6 +158,7 @@ impl From<UserId> for i32 {
 /// 文章 ID（类型安全）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct PostId(pub i32);
 
 impl From<i32> for PostId {
@@ -188,6 +176,7 @@ impl From<PostId> for i32 {
 /// 分类 ID（类型安全）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct CategoryId(pub i32);
 
 impl From<i32> for CategoryId {
@@ -205,6 +194,7 @@ impl From<CategoryId> for i32 {
 /// 标签 ID（类型安全）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct TagId(pub i32);
 
 impl From<i32> for TagId {
@@ -222,6 +212,7 @@ impl From<TagId> for i32 {
 /// 评论 ID（类型安全）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
+#[repr(transparent)]
 pub struct CommentId(pub i32);
 
 impl From<i32> for CommentId {

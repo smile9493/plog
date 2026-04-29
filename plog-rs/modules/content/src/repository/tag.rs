@@ -1,12 +1,13 @@
 //! Tag Repository
 
-use sea_orm::{*, prelude::Expr};
+use sea_orm::{*, sea_query::Expr};
 use std::sync::Arc;
 
 use crate::entities::tag::*;
+use plog_shared::{CrudRepository, impl_crud_repository, impl_sortable_repository};
 
 pub struct TagRepository {
-    db: Arc<DatabaseConnection>,
+    pub db: Arc<DatabaseConnection>,
 }
 
 impl TagRepository {
@@ -14,25 +15,10 @@ impl TagRepository {
         Self { db }
     }
 
-    pub fn db(&self) -> &Arc<DatabaseConnection> {
-        &self.db
-    }
-
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Model>, DbErr> {
-        Entity::find_by_id(id).one(&*self.db).await
-    }
-
     pub async fn find_by_name(&self, name: &str) -> Result<Option<Model>, DbErr> {
         Entity::find()
             .filter(Column::Tagname.eq(name))
             .one(&*self.db)
-            .await
-    }
-
-    pub async fn find_all(&self) -> Result<Vec<Model>, DbErr> {
-        Entity::find()
-            .order_by_desc(Column::Usenum)
-            .all(&*self.db)
             .await
     }
 
@@ -45,25 +31,17 @@ impl TagRepository {
             .await
     }
 
-    pub async fn create(&self, data: ActiveModel) -> Result<Model, DbErr> {
-        data.insert(&*self.db).await
-    }
-
     pub async fn update(&self, id: i32, data: ActiveModel) -> Result<Option<Model>, DbErr> {
         let tag = Entity::find_by_id(id).one(&*self.db).await?;
-        if let Some(model) = tag {
-            let mut active: ActiveModel = model.into();
-            if data.tagname.is_set() { active.tagname = data.tagname.clone(); }
-            if data.usenum.is_set() { active.usenum = data.usenum.clone(); }
-            Ok(Some(active.update(&*self.db).await?))
-        } else {
-            Ok(None)
+        match tag {
+            Some(model) => {
+                let mut active: ActiveModel = model.into();
+                if data.tagname.is_set() { active.tagname = data.tagname.clone(); }
+                if data.usenum.is_set() { active.usenum = data.usenum.clone(); }
+                Ok(Some(active.update(&*self.db).await?))
+            }
+            None => Ok(None),
         }
-    }
-
-    pub async fn delete(&self, id: i32) -> Result<bool, DbErr> {
-        let result = Entity::delete_by_id(id).exec(&*self.db).await?;
-        Ok(result.rows_affected > 0)
     }
 
     pub async fn increment_usage(&self, id: i32) -> Result<bool, DbErr> {
@@ -74,8 +52,7 @@ impl TagRepository {
             .await?;
         Ok(result.rows_affected > 0)
     }
-
-    pub async fn count(&self) -> Result<u64, DbErr> {
-        Entity::find().count(&*self.db).await
-    }
 }
+
+impl_crud_repository!(TagRepository, Entity, ActiveModel, i32, Column::Tid);
+impl_sortable_repository!(TagRepository, Column::Usenum);

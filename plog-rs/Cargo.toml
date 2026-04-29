@@ -33,7 +33,7 @@ license = "MIT"
 axum = { version = "0.7", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
 tower = "0.4"
-tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "compression-deflate", "compression-zstd", "limit"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip", "compression-deflate", "compression-zstd", "limit", "timeout"] }
 
 # 数据库
 sea-orm = { version = "1.0", features = ["sqlx-mysql", "runtime-tokio-rustls", "macros"] }
@@ -76,9 +76,16 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 # 异步
 async-trait = "0.1"
 futures = "0.3"
+tokio-util = "0.7"
 
 # TOML 解析
 toml = "0.8"
+
+# 并发数据结构
+dashmap = "6"
+
+# 基准测试
+criterion = { version = "0.5", features = ["async_tokio"] }
 
 [profile.dev]
 opt-level = 0

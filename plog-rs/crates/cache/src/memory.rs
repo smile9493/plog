@@ -1,8 +1,22 @@
 //! 内存缓存实现
+//!
+//! 使用 DashMap 实现高并发无锁缓存
+//!
+//! Performance Analysis:
+//! - DashMap 分片数 = CPU 核心数 * 4，默认值适合多核场景
+//! - 读操作: O(1) 无锁访问
+//! - 写操作: 仅锁定单个分片 (shard-level locking)
+//! - 内存开销: 每分片一个 RwLock + HashMap 元数据
+//!
+//! Trade-off Analysis:
+//! - P3 (performance): 使用 String 存储缓存值而非 Arc<str>
+//! - 原因: 缓存值通常为 JSON 序列化字符串，生命周期短
+//! - 如果缓存大量重复字符串，可考虑 Arc<str> 或 interning
+//! - Decision: 保持 String，待 profiling 验证内存开销
 
-use std::collections::HashMap;
-use std::sync::RwLock;
 use std::time::{Duration, Instant};
+
+use dashmap::DashMap;
 
 use crate::traits::{Cache, CacheResult};
 
@@ -13,9 +27,14 @@ struct CacheItem {
     expires_at: Option<Instant>,
 }
 
-/// 内存缓存
+/// 内存缓存 (高并发无锁实现)
+///
+/// 使用 DashMap 替代 RwLock<HashMap>，提供更好的并发性能：
+/// - 读操作无阻塞
+/// - 写操作仅锁定单个分片
+/// - 分片数量 = CPU 核心数 * 4
 pub struct MemoryCache {
-    items: RwLock<HashMap<String, CacheItem>>,
+    items: DashMap<String, CacheItem>,
     default_ttl: Duration,
 }
 
@@ -23,7 +42,17 @@ impl MemoryCache {
     /// 创建新的内存缓存
     pub fn new(default_ttl: Duration) -> Self {
         Self {
-            items: RwLock::new(HashMap::new()),
+            items: DashMap::new(),
+            default_ttl,
+        }
+    }
+    
+    /// 创建带预估容量的缓存
+    ///
+    /// P3: 预分配容量减少首次插入时的 rehash
+    pub fn with_capacity(default_ttl: Duration, capacity: usize) -> Self {
+        Self {
+            items: DashMap::with_capacity(capacity),
             default_ttl,
         }
     }
@@ -34,14 +63,9 @@ impl MemoryCache {
     }
 
     /// 清理过期项
-    fn cleanup(&self) -> CacheResult<()> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
+    fn cleanup(&self) {
         let now = Instant::now();
-        items.retain(|_, item| item.expires_at.map_or(true, |exp| exp > now));
-        Ok(())
+        self.items.retain(|_, item| item.expires_at.map_or(true, |exp| exp > now));
     }
 
     fn is_alive(item: &CacheItem) -> bool {
@@ -51,13 +75,8 @@ impl MemoryCache {
 
 impl Cache for MemoryCache {
     fn get(&self, key: &str) -> CacheResult<Option<String>> {
-        let items = self
-            .items
-            .read()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-
-        match items.get(key) {
-            Some(item) if Self::is_alive(item) => Ok(Some(item.value.clone())),
+        match self.items.get(key) {
+            Some(item) if Self::is_alive(&item) => Ok(Some(item.value.clone())),
             Some(_) => Ok(None),
             None => Ok(None),
         }
@@ -76,58 +95,35 @@ impl Cache for MemoryCache {
             expires_at,
         };
 
-        let mut items = self
-            .items
-            .write()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-        items.insert(key.to_string(), item);
+        self.items.insert(key.to_string(), item);
 
-        if items.len() > 1000 {
-            drop(items);
-            self.cleanup()?;
+        if self.items.len() > 1000 {
+            self.cleanup();
         }
 
         Ok(())
     }
 
     fn delete(&self, key: &str) -> CacheResult<()> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-        items.remove(key);
+        self.items.remove(key);
         Ok(())
     }
 
     fn exists(&self, key: &str) -> CacheResult<bool> {
-        let items = self
-            .items
-            .read()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-
-        match items.get(key) {
-            Some(item) => Ok(Self::is_alive(item)),
+        match self.items.get(key) {
+            Some(item) => Ok(Self::is_alive(&item)),
             None => Ok(false),
         }
     }
 
     fn clear(&self) -> CacheResult<()> {
-        let mut items = self
-            .items
-            .write()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-        items.clear();
+        self.items.clear();
         Ok(())
     }
 
     fn ttl(&self, key: &str) -> CacheResult<Option<Duration>> {
-        let items = self
-            .items
-            .read()
-            .map_err(|e| crate::traits::CacheError::Other(format!("Cache lock poisoned: {}", e)))?;
-
-        match items.get(key) {
-            Some(item) if Self::is_alive(item) => {
+        match self.items.get(key) {
+            Some(item) if Self::is_alive(&item) => {
                 Ok(item.expires_at.map(|expires_at| expires_at.saturating_duration_since(Instant::now())))
             }
             Some(_) => Ok(None),

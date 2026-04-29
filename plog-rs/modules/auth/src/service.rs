@@ -4,6 +4,7 @@ use std::sync::Arc;
 use sea_orm::*;
 use plog_core::{CoreError, CoreResult};
 use plog_content::{UserRepository, entities::user};
+use plog_shared::CrudRepository;
 
 use crate::{JwtService, PasswordHasher, Claims};
 use plog_shared::contracts::{UserInfo, LoginResponse, LoginRequest};

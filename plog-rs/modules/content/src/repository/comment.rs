@@ -4,22 +4,15 @@ use sea_orm::*;
 use std::sync::Arc;
 
 use crate::entities::comment::*;
+use plog_shared::{CrudRepository, impl_crud_repository, impl_sortable_repository};
 
 pub struct CommentRepository {
-    db: Arc<DatabaseConnection>,
+    pub db: Arc<DatabaseConnection>,
 }
 
 impl CommentRepository {
     pub fn new(db: Arc<DatabaseConnection>) -> Self {
         Self { db }
-    }
-
-    pub fn db(&self) -> &Arc<DatabaseConnection> {
-        &self.db
-    }
-
-    pub async fn find_by_id(&self, id: i32) -> Result<Option<Model>, DbErr> {
-        Entity::find_by_id(id).one(&*self.db).await
     }
 
     pub async fn find_by_post(&self, post_id: i32, page: u64, per_page: u64) -> Result<(Vec<Model>, u64), DbErr> {
@@ -43,41 +36,30 @@ impl CommentRepository {
         Ok((items, total))
     }
 
-    pub async fn create(&self, data: ActiveModel) -> Result<Model, DbErr> {
-        data.insert(&*self.db).await
-    }
-
     pub async fn update(&self, id: i32, data: ActiveModel) -> Result<Option<Model>, DbErr> {
         let comment = Entity::find_by_id(id).one(&*self.db).await?;
-        if let Some(model) = comment {
-            let mut active: ActiveModel = model.into();
-            if data.content.is_set() { active.content = data.content.clone(); }
-            if data.hide.is_set() { active.hide = data.hide.clone(); }
-            Ok(Some(active.update(&*self.db).await?))
-        } else {
-            Ok(None)
+        match comment {
+            Some(model) => {
+                let mut active: ActiveModel = model.into();
+                if data.content.is_set() { active.content = data.content.clone(); }
+                if data.hide.is_set() { active.hide = data.hide.clone(); }
+                Ok(Some(active.update(&*self.db).await?))
+            }
+            None => Ok(None),
         }
     }
 
     pub async fn approve(&self, id: i32) -> Result<bool, DbErr> {
         let comment = Entity::find_by_id(id).one(&*self.db).await?;
-        if let Some(model) = comment {
-            let mut active: ActiveModel = model.into();
-            active.hide = Set("n".to_string());
-            active.update(&*self.db).await?;
-            Ok(true)
-        } else {
-            Ok(false)
+        match comment {
+            Some(model) => {
+                let mut active: ActiveModel = model.into();
+                active.hide = Set("n".to_string());
+                active.update(&*self.db).await?;
+                Ok(true)
+            }
+            None => Ok(false),
         }
-    }
-
-    pub async fn delete(&self, id: i32) -> Result<bool, DbErr> {
-        let result = Entity::delete_by_id(id).exec(&*self.db).await?;
-        Ok(result.rows_affected > 0)
-    }
-
-    pub async fn count(&self) -> Result<u64, DbErr> {
-        Entity::find().count(&*self.db).await
     }
 
     pub async fn count_by_post(&self, post_id: i32) -> Result<u64, DbErr> {
@@ -88,3 +70,6 @@ impl CommentRepository {
             .await
     }
 }
+
+impl_crud_repository!(CommentRepository, Entity, ActiveModel, i32, Column::Cid);
+impl_sortable_repository!(CommentRepository, Column::Date);

@@ -2,7 +2,6 @@
 
 use sea_orm::*;
 use std::sync::Arc;
-use std::collections::HashMap;
 
 use crate::entity::*;
 

@@ -10,6 +10,7 @@ plog-core = { path = "../core" }
 plog-auth = { path = "../auth" }
 plog-content = { path = "../content" }
 plog-contracts = { path = "../contracts" }
+plog-shared = { path = "../../packages/plog-shared" }
 axum = { workspace = true }
 tokio = { workspace = true }
 tower = { workspace = true }
@@ -24,4 +25,5 @@ chrono = { workspace = true }
 uuid = { workspace = true }
 validator = { workspace = true }
 tower_governor = { workspace = true }
+tokio-util = { workspace = true }
 plog-migrations = { path = "../../migrations" }

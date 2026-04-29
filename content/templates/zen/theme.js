@@ -1,6 +1,11 @@
 (function() {
-  var t = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', t);
+  var savedTheme = localStorage.getItem('theme') || 'zen';
+  var savedIntensity = localStorage.getItem('themeIntensity') || 'light';
+
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  if (savedIntensity === 'dark') {
+    document.documentElement.setAttribute('data-theme-intensity', 'dark');
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
     var toggle = document.getElementById('themeToggle');
@@ -9,14 +14,26 @@
 
     toggle.addEventListener('click', function(e) {
       e.stopPropagation();
+      closeOtherMenus('themeSwitcher');
       menu.classList.toggle('show');
     });
 
     document.querySelectorAll('.theme-option').forEach(function(o) {
       o.addEventListener('click', function() {
-        var name = o.dataset.theme;
-        document.documentElement.setAttribute('data-theme', name);
-        localStorage.setItem('theme', name);
+        var theme = o.dataset.theme;
+        var intensity = o.dataset.intensity || 'light';
+
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        if (intensity === 'dark') {
+          document.documentElement.setAttribute('data-theme-intensity', 'dark');
+          localStorage.setItem('themeIntensity', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme-intensity');
+          localStorage.removeItem('themeIntensity');
+        }
+
         menu.classList.remove('show');
         updateActiveTheme();
       });
@@ -31,10 +48,23 @@
     updateActiveTheme();
   });
 
+  function closeOtherMenus(except) {
+    document.querySelectorAll('.float-widget-menu.show').forEach(function(m) {
+      if (!m.parentNode || m.parentNode.id !== except) {
+        m.classList.remove('show');
+      }
+    });
+  }
+
   function updateActiveTheme() {
-    var current = document.documentElement.getAttribute('data-theme') || 'light';
+    var savedTheme = localStorage.getItem('theme') || 'zen';
+    var savedIntensity = localStorage.getItem('themeIntensity') || 'light';
+
     document.querySelectorAll('.theme-option').forEach(function(o) {
-      o.classList.toggle('active-theme', o.dataset.theme === current);
+      var theme = o.dataset.theme;
+      var intensity = o.dataset.intensity || 'light';
+      var isActive = (savedTheme === theme && (intensity === 'dark' ? savedIntensity === 'dark' : true));
+      o.classList.toggle('active-theme', isActive);
     });
   }
 })();

@@ -13,6 +13,7 @@ use crate::AppState;
 use plog_auth::AuthUser;
 use plog_contracts::ApiResponse;
 use plog_content::{repository::CommentRepository, entities::comment};
+use plog_shared::CrudRepository;
 
 /// 创建评论路由
 pub fn routes() -> Router<AppState> {
@@ -78,9 +79,9 @@ async fn list_comments(
                     "has_more": page < total_pages
                 }
             });
-            Json(ApiResponse::success(response_data))
+            Json(ApiResponse::ok(response_data))
         }
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -92,9 +93,9 @@ async fn get_comment(
     let repo = CommentRepository::new(Arc::new(state.db));
 
     match repo.find_by_id(id).await {
-        Ok(Some(comment)) => Json(ApiResponse::success(serde_json::to_value(comment).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Comment not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(comment)) => Json(ApiResponse::ok(serde_json::to_value(comment).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Comment not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -109,11 +110,11 @@ async fn create_comment(
 
     // 验证必填字段
     if payload.content.trim().is_empty() {
-        return Json(ApiResponse::error("VALIDATION_ERROR", "Comment content is required"));
+        return Json(ApiResponse::err("VALIDATION_ERROR", "Comment content is required"));
     }
 
     if payload.poster.trim().is_empty() {
-        return Json(ApiResponse::error("VALIDATION_ERROR", "Poster name is required"));
+        return Json(ApiResponse::err("VALIDATION_ERROR", "Poster name is required"));
     }
 
     let now = chrono::Utc::now().timestamp();
@@ -132,8 +133,8 @@ async fn create_comment(
     };
 
     match repo.create(new_comment).await {
-        Ok(comment) => Json(ApiResponse::success(serde_json::to_value(comment).unwrap_or_default())),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(comment) => Json(ApiResponse::ok(serde_json::to_value(comment).unwrap_or_default())),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -156,9 +157,9 @@ async fn update_comment(
     }
 
     match repo.update(id, update_data).await {
-        Ok(Some(comment)) => Json(ApiResponse::success(serde_json::to_value(comment).unwrap_or_default())),
-        Ok(None) => Json(ApiResponse::error("NOT_FOUND", "Comment not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(Some(comment)) => Json(ApiResponse::ok(serde_json::to_value(comment).unwrap_or_default())),
+        Ok(None) => Json(ApiResponse::err("NOT_FOUND", "Comment not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -171,9 +172,9 @@ async fn delete_comment(
     let repo = CommentRepository::new(Arc::new(state.db));
 
     match repo.delete(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Comment not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Comment not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }
 
@@ -186,8 +187,8 @@ async fn approve_comment(
     let repo = CommentRepository::new(Arc::new(state.db));
 
     match repo.approve(id).await {
-        Ok(true) => Json(ApiResponse::success(())),
-        Ok(false) => Json(ApiResponse::error("NOT_FOUND", "Comment not found")),
-        Err(e) => Json(ApiResponse::error("DATABASE_ERROR", e.to_string())),
+        Ok(true) => Json(ApiResponse::ok(())),
+        Ok(false) => Json(ApiResponse::err("NOT_FOUND", "Comment not found")),
+        Err(e) => Json(ApiResponse::err("DATABASE_ERROR", e.to_string())),
     }
 }

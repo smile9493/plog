@@ -1,49 +1,110 @@
-# Plog Rust 后端开发说明
+# Plog CMS Rust Backend
 
-本目录是 Rust 后端工作区，主要提供 API、认证、内容、主题、插件、缓存等能力。
+> 微内核架构的 Rust 后端服务
+
+## 架构
+
+```
+plog-rs/
+├── packages/           # 基础包
+│   ├── plog-core/      # 核心错误与配置
+│   └── plog-shared/    # 共享类型与 trait
+├── modules/            # 功能模块
+│   ├── content/        # 内容实体与仓储
+│   ├── auth/           # JWT 认证与密码
+│   ├── settings/       # 系统设置
+│   ├── media/          # 媒体上传
+│   └── audit/          # 审计日志
+├── extensions/         # 扩展
+│   ├── plugin/         # 插件管理器
+│   └── theme/          # 主题管理器
+├── plog-api/           # API 服务入口
+├── crates/             # 独立模块 (带测试)
+├── migrations/         # 数据库迁移
+├── config/             # 配置文件
+└── benches/            # 性能基准
+```
 
 ## 环境要求
 
-- Rust stable
+- Rust 1.88+
 - MySQL 8.0
-- Linux / Linux 容器环境优先
+- Linux 容器环境优先
 
 ## 常用命令
 
 ```bash
-cargo build
-cargo run --bin plog-api
+# 开发
+cargo run
+
+# 生产
+cargo run --release
+
+# 测试
 cargo test
-cargo fmt
 cargo clippy
+
+# 基准测试
+cargo bench --bench api_bench
 ```
 
-## 目录说明
+## 模块说明
 
-```text
-plog-rs/
-├── Cargo.toml
-├── crates/
-│   ├── api/
-│   ├── auth/
-│   ├── cache/
-│   ├── content/
-│   ├── core/
-│   ├── plugin/
-│   └── theme/
-├── config/
-└── docs/
+| 模块 | 说明 |
+|------|------|
+| packages/plog-core | 核心错误与配置 |
+| packages/plog-shared | 共享类型、trait、API 响应 |
+| modules/content | 文章、分类、标签、评论 |
+| modules/auth | JWT、密码、中间件 |
+| plog-api | Axum API 入口 |
+
+## 配置
+
+编辑 `config/settings.toml`:
+
+```toml
+[database]
+url = "mysql://plog:plog123@localhost/plog"
+max_connections = 20
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[auth]
+jwt_secret = "your-secret"
+jwt_expiration = 86400
 ```
 
-## API 入口
+## 性能优化
 
-- 服务入口：`crates/api/src/lib.rs`
-- 路由入口：`crates/api/src/routes/mod.rs`
-- 错误响应：`crates/api/src/error.rs`
-- 响应封装：`crates/api/src/response.rs`
+详见 [PERFORMANCE.md](PERFORMANCE.md) 和 [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md)
 
-## 说明
+### 慢查询监控
 
-- 旧版示例里出现的 `/api/v1/...` 路径已不再作为主文档参考。
-- 以当前 `crates/api/src/routes/` 下的实现为准。
-- 如果你在容器里运行，优先查看 `docker/README.md`。
+```bash
+RUST_LOG=sqlx=debug cargo run
+```
+
+## 开发规范
+
+### CI 强制 Lints
+
+```rust
+#![deny(clippy::await_holding_lock)]
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::todo)]
+```
+
+### 规范优先级
+
+| 级别 | 说明 |
+|------|------|
+| P0 | 安全性: 无 unsafe, panic hook |
+| P1 | 可维护性: sealed trait |
+| P2 | 工程效率: workspace |
+| P3 | 性能: profiling |
+
+## License
+
+MIT

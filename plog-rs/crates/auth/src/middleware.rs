@@ -82,27 +82,28 @@ where
 /// 从请求提取 Token（支持 Bearer header 和 Cookie）
 fn extract_token(parts: &Parts) -> Result<String, AuthError> {
     // 优先从 Authorization header 提取
-    if let Some(header) = parts.headers.get(AUTHORIZATION) {
-        if let Ok(header_str) = header.to_str() {
-            if header_str.starts_with("Bearer ") {
-                return Ok(header_str[7..].to_string());
-            }
-        }
+    let bearer_token = parts.headers
+        .get(AUTHORIZATION)
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| s.strip_prefix("Bearer "))
+        .map(str::to_string);
+    
+    if let Some(token) = bearer_token {
+        return Ok(token);
     }
 
     // 从 Cookie 提取
-    if let Some(cookie_header) = parts.headers.get(axum::http::header::COOKIE) {
-        if let Ok(cookie_str) = cookie_header.to_str() {
-            for cookie in cookie_str.split(';') {
-                let cookie = cookie.trim();
-                if cookie.starts_with("token=") {
-                    return Ok(cookie[6..].to_string());
-                }
-            }
-        }
-    }
+    let cookie_token = parts.headers
+        .get(axum::http::header::COOKIE)
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| {
+            s.split(';')
+                .map(str::trim)
+                .find_map(|cookie| cookie.strip_prefix("token="))
+        })
+        .map(str::to_string);
 
-    Err(AuthError::MissingToken)
+    cookie_token.ok_or(AuthError::MissingToken)
 }
 
 /// 认证中间件

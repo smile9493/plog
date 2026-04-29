@@ -1,0 +1,15 @@
+[database]
+url = "mysql://plog:plog123@localhost:3306/plog"
+max_connections = 10
+min_connections = 1
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[auth]
+jwt_secret = "plog-jwt-secret-key-change-in-production"
+jwt_expiration = 86400
+
+[cors]
+allowed_origins = ["http://localhost:3000", "http://localhost:8080"]

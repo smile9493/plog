@@ -124,17 +124,25 @@ const handleUserCommand = async (command: string) => {
 <style scoped>
 .layout-container {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar {
   width: 240px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
   padding: 24px 0;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
 }
 
 .logo {
@@ -147,6 +155,7 @@ const handleUserCommand = async (command: string) => {
   gap: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .logo-icon {
@@ -155,6 +164,8 @@ const handleUserCommand = async (command: string) => {
 
 .nav-menu {
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .nav-item {
@@ -188,6 +199,7 @@ const handleUserCommand = async (command: string) => {
 .sidebar-footer {
   padding: 16px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 
 .theme-switcher {
@@ -252,15 +264,22 @@ const handleUserCommand = async (command: string) => {
 
 .main-content {
   flex: 1;
+  margin-left: 240px;
   padding: 24px;
   background: var(--bg);
   overflow-y: auto;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .sidebar {
     width: 64px;
     overflow: hidden;
+  }
+  
+  .main-content {
+    margin-left: 64px;
   }
   
   .logo-text,

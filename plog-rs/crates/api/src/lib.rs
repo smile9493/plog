@@ -2,19 +2,29 @@
 //! 
 //! API 服务入口
 
+// CI 强制 Lints - 生产环境安全保护
+#![deny(clippy::await_holding_lock)]
+#![deny(clippy::await_holding_refcell_ref)]
+#![deny(clippy::undocumented_unsafe_blocks)]
+#![deny(clippy::unwrap_used)]
+#![deny(clippy::todo)]
+#![deny(clippy::dbg_macro)]
+#![deny(unsafe_op_in_unsafe_fn)]
+
 mod routes;
 
 use axum::{routing::get, Router, Json, middleware, http::Request, response::Response};
 use std::sync::Arc;
 use std::time::Duration;
-use tower_http::cors::{CorsLayer, Any, AllowOrigin};
+use tower_http::cors::{CorsLayer, AllowOrigin};
 use tower_http::compression::CompressionLayer;
 use tower_http::limit::RequestBodyLimitLayer;
-use tower_governor::{GovernorLayer, key_extractor::SmartIpKeyExtractor, governor::GovernorConfigBuilder};
+use tower_http::timeout::TimeoutLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use axum::extract::FromRef;
 use sea_orm::{Database, ConnectOptions};
 use plog_migrations::MigratorTrait;
+use tokio_util::sync::CancellationToken;
 
 /// 应用状态
 #[derive(Clone)]
@@ -27,52 +37,48 @@ pub struct AppState {
 impl FromRef<AppState> for plog_auth::AuthState {
     fn from_ref(state: &AppState) -> Self {
         plog_auth::AuthState {
+            // DEVIATION: Arc clone on cold path (request extraction)
             jwt: state.jwt.clone(),
         }
     }
 }
 
-/// 请求 ID 中间件
+#[tracing::instrument(skip_all)]
 async fn request_id_middleware(mut request: Request<axum::body::Body>, next: axum::middleware::Next) -> Response {
-    // 生成请求 ID
     let request_id = uuid::Uuid::new_v4().to_string();
     
-    // 将请求 ID 添加到请求头
-    request.headers_mut().insert(
-        "x-request-id",
-        request_id.parse().unwrap(),
-    );
+    let header_value: axum::http::HeaderValue = match request_id.parse() {
+        Ok(v) => v,
+        Err(e) => {
+            tracing::error!("Failed to parse request ID as header: {}", e);
+            return next.run(request).await;
+        }
+    };
     
-    // 将请求 ID 添加到 tracing span
+    request.headers_mut().insert("x-request-id", header_value.clone());
+    
     let span = tracing::info_span!("request", request_id = %request_id);
     let _guard = span.enter();
     
-    // 记录请求开始时间
     let start = std::time::Instant::now();
     
-    // 继续处理请求
     let mut response = next.run(request).await;
     
-    // 计算请求耗时
     let duration = start.elapsed();
     
-    // 将请求 ID 添加到响应头
-    response.headers_mut().insert(
-        "x-request-id",
-        request_id.parse().unwrap(),
-    );
+    response.headers_mut().insert("x-request-id", header_value);
     
-    // 添加响应时间头
-    response.headers_mut().insert(
-        "x-response-time",
-        format!("{}ms", duration.as_millis()).parse().unwrap(),
-    );
+    let duration_header = format!("{}ms", duration.as_millis());
+    if let Ok(v) = duration_header.parse() {
+        response.headers_mut().insert("x-response-time", v);
+    }
     
     response
 }
 
 /// 启动 API 服务
-pub async fn run() -> anyhow::Result<()> {
+#[tracing::instrument(skip_all)]
+pub async fn run(cancel_token: CancellationToken) -> anyhow::Result<()> {
     // 初始化日志
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::try_from_default_env()
@@ -85,13 +91,22 @@ pub async fn run() -> anyhow::Result<()> {
         .map_err(|e| anyhow::anyhow!("Failed to load config: {}", e))?;
 
     // 配置数据库连接池
+    // Performance Analysis:
+    // - max_connections: 根据并发请求量设置，建议 = CPU核数 * 2 + 磁盘数
+    // - min_connections: 预热连接，减少冷启动延迟
+    // - connect_timeout: 10s 适合局域网数据库
+    // - idle_timeout: 300s 平衡资源占用和重连开销
+    // - max_lifetime: 1800s 防止长期累积问题 (MySQL wait_timeout)
+    // - P3 优化: 生产环境建议启用 sqlx_logging 监控慢查询
+    // - 慢查询监控: 设置环境变量 RUST_LOG=sqlx=debug
     let mut db_opt = ConnectOptions::new(&config.database.url);
     db_opt.max_connections(config.database.max_connections)
         .min_connections(config.database.min_connections)
         .connect_timeout(Duration::from_secs(10))
         .idle_timeout(Duration::from_secs(300))
         .max_lifetime(Duration::from_secs(1800))
-        .sqlx_logging(false);
+        .sqlx_logging(true)  // 启用慢查询监控
+        .sqlx_logging_level(tracing::Level::DEBUG);  // DEBUG 级别
     
     // 连接数据库
     let db = Database::connect(db_opt).await?;
@@ -115,8 +130,8 @@ pub async fn run() -> anyhow::Result<()> {
 
     // 创建 CORS 层（白名单模式）
     let cors_origins: Vec<_> = config.cors.allowed_origins.iter()
-        .map(|o| o.parse().expect("Invalid CORS origin"))
-        .collect();
+        .map(|o| o.parse().map_err(|e| anyhow::anyhow!("Invalid CORS origin '{}': {}", o, e)))
+        .collect::<Result<Vec<_>, _>>()?;
     let cors = CorsLayer::new()
         .allow_methods([
             axum::http::Method::GET,
@@ -136,17 +151,14 @@ pub async fn run() -> anyhow::Result<()> {
         .allow_origin(AllowOrigin::list(cors_origins))
         .allow_credentials(true);
 
-    // 创建速率限制层（每 IP 每分钟 60 请求）
-    let rate_limiter = GovernorLayer {
-        config: std::sync::Arc::new(
-            GovernorConfigBuilder::default()
-                .per_second(1)
-                .burst_size(60)
-                .key_extractor(SmartIpKeyExtractor)
-                .finish()
-                .expect("Failed to build rate limiter config"),
-        ),
-    };
+    // 创建速率限制层（每 IP 每分钟 请求）
+    // DEVIATION: Rate limiter disabled for current deployment
+    // let rate_limiter_config = tower_governor::governor::GovernorConfigBuilder::default()
+    //     .per_second(1)
+    //     .burst_size(60)
+    //     .key_extractor(tower_governor::key_extractor::SmartIpKeyExtractor)
+    //     .finish()
+    //     .ok_or_else(|| anyhow::anyhow!("Failed to build rate limiter config"))?;
 
     // 创建应用状态
     let state = AppState { db, jwt: jwt.clone() };
@@ -162,6 +174,7 @@ pub async fn run() -> anyhow::Result<()> {
         .merge(routes::tags::routes())
         .merge(routes::comments::routes())
         .layer(middleware::from_fn(request_id_middleware))
+        .layer(TimeoutLayer::new(Duration::from_secs(30)))
         .layer(CompressionLayer::new())
         .layer(cors)
         // .layer(rate_limiter)
@@ -173,8 +186,16 @@ pub async fn run() -> anyhow::Result<()> {
     tracing::info!("Starting server on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
-    axum::serve(listener, app).await?;
+    
+    // 优雅关闭
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async move {
+            cancel_token.cancelled().await;
+            tracing::info!("Graceful shutdown initiated, draining connections...");
+        })
+        .await?;
 
+    tracing::info!("Server shutdown complete");
     Ok(())
 }
 

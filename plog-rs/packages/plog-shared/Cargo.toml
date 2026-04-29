@@ -1,0 +1,19 @@
+[package]
+name = "plog-shared"
+version = "0.1.0"
+edition = "2021"
+description = "Plog CMS Shared - API contracts and common traits"
+license = "MIT"
+
+[dependencies]
+plog-core = { path = "../plog-core" }
+sea-orm = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+async-trait = { workspace = true }
+thiserror = { workspace = true }
+validator = { workspace = true }
+config = { workspace = true }
+axum = { workspace = true }

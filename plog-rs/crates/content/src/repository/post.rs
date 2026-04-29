@@ -158,6 +158,15 @@ impl PostRepository {
     }
 
     /// 筛选文章（支持分类、关键词、状态、排序）
+    ///
+    /// Performance Analysis:
+    /// - 使用 SeaORM 分页避免全量加载
+    /// - 关键词搜索: LIKE 查询，大数据集考虑全文索引
+    /// - 索引建议:
+    ///   - `idx_sortid` ON posts(sortid) - 分类筛选
+    ///   - `idx_hide_date` ON posts(hide, date DESC) - 状态+时间排序
+    ///   - `idx_date` ON posts(date DESC) - 默认排序
+    /// - P3 优化路径: 大数据集考虑 Elasticsearch
     pub async fn filter(
         &self,
         category_id: Option<i32>,

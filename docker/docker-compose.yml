@@ -63,7 +63,8 @@ services:
       PLOG__AUTH__JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       PLOG__SERVER__HOST: 0.0.0.0
       PLOG__SERVER__PORT: 8080
-      RUST_LOG: ${RUST_LOG:-info}
+      # 性能优化: 慢查询监控
+      RUST_LOG: ${RUST_LOG:-plog_api=info,sqlx=debug,tower_http=info}
     ports:
       - "8080:8080"
     depends_on:
@@ -75,6 +76,12 @@ services:
       - api_themes:/app/content/themes
       - api_cache:/app/content/cache
       - api_logs:/app/content/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - plog-network

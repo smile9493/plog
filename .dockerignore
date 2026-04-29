@@ -1,25 +1,84 @@
-# Docker ignore
+# Docker ignore - 仅包含构建必需文件
+
+# ==================== 构建产物 ====================
 **/target/
 **/node_modules/
+**/dist/
+**/.nuxt/
+**/.output/
+**/.cache/
+
+# ==================== 版本控制 ====================
 **/.git/
+**/.gitignore
+**/.gitattributes
+
+# ==================== AI工具 ====================
 **/.trellis/
 **/.kilo/
 **/.opencode/
 **/.agents/
 **/.claude/
-**/compat/
-**/include/
-**/admin/
-**/vendor/
-**/emlog_data/
-**/plog-rs/target/
-# 不排除 plog-rs/config - 需要用于Docker构建
-# **/plog-rs/config/
-# 不排除 docker/nginx*.conf - 需要用于构建
-# docker/
+**/.codeartsdoer/
+**/.cursor/
+**/.trae/
+**/.arts/
+
+# ==================== 文档 ====================
 docs/
+**/*.md
+!plog-rs/README.md
+
+# ==================== IDE ====================
+.vscode/
+.idea/
+.fleet/
+*.sublime-*
+
+# ==================== 测试 ====================
 tests/
-*.log
-*.tmp
-*.md
-*.bak
+**/tests/
+**/benches/
+coverage/
+**/*.test.js
+**/*.spec.js
+
+# ==================== 临时文件 ====================
+**/*.log
+**/*.tmp
+**/*.bak
+**/*.swp
+**/*~
+**/*.orig
+**/*.zip
+**/*.tar.gz
+
+# ==================== 敏感信息 ====================
+**/*.key
+**/*.pem
+**/*.crt
+**/secrets/
+**/.env
+**/.env.local
+**/.env.*.local
+
+# ==================== 数据库 ====================
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+data/
+
+# ==================== Python ====================
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+
+# ==================== 其他 ====================
+compat/
+include/
+admin/
+vendor/
+emlog_data/
+deepseek_html_*
+*.svg
+flamegraph*.svg

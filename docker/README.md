@@ -1,38 +1,89 @@
-# Plog CMS Docker 部署说明
+# Plog CMS Docker 部署
 
-这里描述仓库当前的 Docker 运行方式，主要面向 Linux 容器环境。
+> 完整的容器化部署方案
 
-## 启动方式
+## 快速启动
 
 ```bash
 cd docker
 docker compose up -d
 ```
 
-## 服务端口
+首次访问 http://localhost:8081 进入初始化页面。
 
-- API：`8080`
-- 管理后台：`8081`
-- 前台站点：`8082`
-- MySQL：`3306`
+## 服务架构
 
-## 目录说明
+| 服务 | 端口 | 说明 |
+|------|------|------|
+| API | 8080 | Rust 后端 |
+| 管理后台 | 8081 | Vue 3 SPA |
+| 前台网站 | 8082 | 静态站点 |
+| MySQL | 3306 | 数据库 |
+| Nginx | 80/443 | 反向代理 |
 
-- `Dockerfile.api`：API 服务镜像构建
-- `Dockerfile.admin-web`：管理后台镜像构建
-- `Dockerfile.frontend`：前台站点镜像构建
-- `docker-compose.yml`：整套服务编排
+## 环境变量
 
-## 当前约定
+编辑 `.env`:
 
-- API 镜像采用多阶段构建，运行时使用 Linux slim 基础镜像。
-- 文档中的路径均以仓库根目录为基准。
-- 不再保留面向 Windows 本地路径的说明。
+```bash
+# 数据库
+MYSQL_ROOT_PASSWORD=root123
+MYSQL_DATABASE=plog
+MYSQL_USER=plog
+MYSQL_PASSWORD=plog123
 
-## 访问地址
+# JWT
+JWT_SECRET=your-secret-key
 
-- `http://localhost:8080`
-- `http://localhost:8081`
-- `http://localhost:8082`
+# 性能监控 (慢查询)
+RUST_LOG=plog_api=info,sqlx=debug
+```
 
-如果使用 Nginx 统一入口，请以 `docker-compose.yml` 和 `nginx.conf` 为准。
+## 常用命令
+
+```bash
+# 启动
+docker compose up -d
+
+# 停止
+docker compose down
+
+# 重启
+docker compose restart api
+
+# 重建
+docker compose build api && docker compose up -d api
+
+# 日志
+docker compose logs -f api
+
+# 状态
+docker compose ps
+```
+
+## 性能监控
+
+### 慢查询
+
+```bash
+docker compose logs api | grep -i slow
+```
+
+### 资源
+
+```bash
+docker stats plog-api plog-mysql
+```
+
+## 故障排查
+
+| 问题 | 解决 |
+|------|------|
+| API 连接失败 | 检查 MySQL 健康状态 |
+| 内存不足 | 调整容器资源限制 |
+| 慢查询多 | 查看 sqlx 日志，添加索引 |
+
+## 文档
+
+- [../README.md](../README.md) - 项目总览
+- [../plog-rs/PERFORMANCE.md](../plog-rs/PERFORMANCE.md) - 性能优化

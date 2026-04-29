@@ -28,7 +28,8 @@ impl ThemeManager {
 
     /// 发现所有主题
     pub fn discover(&mut self) -> Result<Vec<ThemeInfo>, ThemeError> {
-        let mut discovered = Vec::new();
+        // P3: 预分配容量，典型场景 <10 个主题
+        let mut discovered = Vec::with_capacity(8);
 
         if !self.themes_dir.exists() {
             return Ok(discovered);
@@ -66,7 +67,8 @@ impl ThemeManager {
     /// 异步发现所有主题
     pub async fn discover_async(&mut self) -> Result<Vec<ThemeInfo>, ThemeError> {
         tracing::debug!("Discover themes started: dir={}", self.themes_dir.display());
-        let mut discovered = Vec::new();
+        // P3: 预分配容量
+        let mut discovered = Vec::with_capacity(8);
 
         if !self.themes_dir.exists() {
             tracing::debug!("Theme dir does not exist, skip discovery");
